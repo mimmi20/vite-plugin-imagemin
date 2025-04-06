@@ -13,6 +13,9 @@ on:
           - minor
           - major
 
+permissions:
+  contents: read
+
 jobs:
   bump-version:
     name: Bump package ${{ inputs.semver }} version

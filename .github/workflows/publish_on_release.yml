@@ -5,6 +5,9 @@ on:
     types: [published]
     # types: [created]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test (Node ${{ matrix.node-version }} on ${{ matrix.os }})
