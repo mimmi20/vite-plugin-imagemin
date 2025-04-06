@@ -15,7 +15,7 @@ import {
   // sep,
 } from 'node:path';
 
-import _config from '../../playground/vite.config';
+import _config from '../vite.config';
 import viteImagemin, {
   parseOptions,
   parsePlugins,
