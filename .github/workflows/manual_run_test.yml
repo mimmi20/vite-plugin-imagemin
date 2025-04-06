@@ -6,16 +6,17 @@ on:
       node_versions:
         description: 'Select Node versions'
         required: true
-        default: '["18.x", "20.x"]'
+        default: '["18.x", "20.x", "22.x"]'
         type: choice
         options:
           # - '["14.x"]'
           # - '["16.x"]'
           - '["18.x"]'
           - '["20.x"]'
+          - '["22.x"]'
           # - '["14.x", "16.x", "18.x"]'
           # - '["16.x", "18.x"]'
-          - '["18.x", "20.x"]'
+          - '["18.x", "20.x", "22.x"]'
       os_version:
         description: 'Select OS'
         required: true
