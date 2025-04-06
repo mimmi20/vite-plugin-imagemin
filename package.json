@@ -59,6 +59,7 @@
     "imagemin-pngquant": "^10.0.0",
     "imagemin-svgo": "^11.0.1",
     "imagemin-webp": "^8.0.0",
+    "is-apng": "^1.2.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.5.3",
     "prettier-eslint": "^16.3.0",
