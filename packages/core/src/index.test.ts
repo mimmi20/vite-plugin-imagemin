@@ -53,42 +53,13 @@ import type {
  * Prepare playground config without viteImagemin plugin
  */
 const config = _config as UserConfig;
-const playgroundConfig = {
-  ...config,
-  plugins:
-    config?.plugins?.filter((p) => {
-      return !(
-        p &&
-        !Array.isArray(p) &&
-        !(p instanceof Promise) &&
-        p?.name === 'vite-plugin-imagemin'
-      );
-    }) || [],
-};
-
-/**
- * Default build config for all tests
- */
-const buildConfig = {
-  root: 'packages/playground',
-  logLevel: 'silent',
-  configFile: false,
-  build: {
-    // esbuild do not minify ES lib output since that would remove pure annotations and break tree-shaking
-    // skip transpilation during tests to make it faster
-    target: 'esnext',
-    // tests are flaky when `emptyOutDir` is `true`
-    emptyOutDir: false,
-    minify: false,
-  },
-};
 const getBuildConfig = (plugin, extraOptions = {}) =>
   mergeConfig(
-    buildConfig,
+    config,
     Object.assign(
       {
-        ...playgroundConfig,
-        plugins: playgroundConfig.plugins.concat(plugin),
+        ...config,
+        plugins: config.plugins.concat(plugin),
       },
       extraOptions
     )
