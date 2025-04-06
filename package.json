@@ -51,6 +51,7 @@
     "eslint-plugin-vitest-globals": "^1.5.0",
     "expose-env": "^0.1.7",
     "globals": "^16.0.0",
+    "imagemin": "^9.0.1",
     "imagemin-gif2webp": "^3.0.0",
     "imagemin-gifsicle": "^7.0.0",
     "imagemin-mozjpeg": "^10.0.0",
