@@ -44,6 +44,8 @@ jobs:
       composer-options: "--optimize-autoloader --prefer-dist --prefer-stable -v"
       skip-php-install: true
       skip-npm-install: false
+      skip-nasm-install: false
+      skip-libimagequant-install: true
 
   analytics:
     name: "Project Analysis"
@@ -62,6 +64,8 @@ jobs:
       skip-eslint: false
       skip-stylelint: false
       skip-prettier: false
+      skip-nasm-install: false
+      skip-libimagequant-install: true
       phpcs-options: ""
 
   tests:
@@ -85,6 +89,8 @@ jobs:
       upload-codeclimate: true
       upload-coveralls: false
       upload-flag: ""
+      skip-nasm-install: false
+      skip-libimagequant-install: true
     secrets:
       ENV_CODECLIMATE_API_KEY: ${{ secrets.CODECLIMATE_API_KEY }}
       ENV_CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
