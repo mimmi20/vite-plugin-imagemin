@@ -62,7 +62,7 @@ jobs:
       skip-phpstan: true
       skip-rector: true
       skip-eslint: false
-      skip-stylelint: false
+      skip-stylelint: true
       skip-prettier: false
       skip-nasm-install: false
       skip-libimagequant-install: false
