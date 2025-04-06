@@ -713,15 +713,9 @@ export default function viteImagemin(_options: ConfigOptions): PluginOption {
 
   /* istanbul ignore next -- @preserve */
   let logger: Logger = {
-    info: () => {
-      null;
-    },
-    warn: () => {
-      null;
-    },
-    error: () => {
-      null;
-    },
+    info: () => {},
+    warn: () => {},
+    error: () => {},
   };
 
   const filter = createFilter(options.include, options.exclude);
