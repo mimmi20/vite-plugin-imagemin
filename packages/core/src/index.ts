@@ -314,7 +314,7 @@ export async function processFile({
         }
       }
 
-      let newBuffer: Buffer;
+      let newBuffer: Uint8Array;
       let newSize = 0;
 
       try {
@@ -354,7 +354,7 @@ export async function processFile({
 
       await FileCache.update({
         fileName: filePathTo,
-        buffer: newBuffer,
+        buffer: newBuffer as Buffer,
         stats: {
           oldSize,
           newSize,
