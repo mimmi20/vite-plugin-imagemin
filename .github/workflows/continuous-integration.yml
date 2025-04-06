@@ -44,6 +44,8 @@ jobs:
       composer-options: "--optimize-autoloader --prefer-dist --prefer-stable -v"
       skip-php-install: true
       skip-npm-install: false
+      skip-nasm-install: false
+      skip-libimagequant-install: false
 
   analytics:
     name: "Project Analysis"
@@ -60,8 +62,10 @@ jobs:
       skip-phpstan: true
       skip-rector: true
       skip-eslint: false
-      skip-stylelint: false
+      skip-stylelint: true
       skip-prettier: false
+      skip-nasm-install: false
+      skip-libimagequant-install: false
       phpcs-options: ""
 
   tests:
@@ -85,6 +89,8 @@ jobs:
       upload-codeclimate: true
       upload-coveralls: false
       upload-flag: ""
+      skip-nasm-install: false
+      skip-libimagequant-install: false
     secrets:
       ENV_CODECLIMATE_API_KEY: ${{ secrets.CODECLIMATE_API_KEY }}
       ENV_CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -120,8 +126,14 @@ jobs:
           lfs: false
           persist-credentials: false
 
+      - name: "Set up NASM (for imagemin binary builds)"
+        uses: "ilammy/setup-nasm@v1"
+
       - name: "install libimagequant-dev"
         run: "sudo apt-get install libimagequant-dev -y"
+
+      - name: "install libpng-dev"
+        run: "sudo apt-get install libpng-dev -y"
 
       - name: "Use Node.js ${{ matrix.node-version }}"
         uses: "actions/setup-node@v4"

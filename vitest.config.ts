@@ -4,8 +4,8 @@
 import {
   defineConfig,
   // configDefaults,
-} from 'vitest/config'
-import GithubActionsReporter from 'vitest-github-actions-reporter'
+} from 'vitest/config';
+import GithubActionsReporter from 'vitest-github-actions-reporter';
 
 export default defineConfig({
   test: {
@@ -40,4 +40,4 @@ export default defineConfig({
       cleanOnRerun: true,
     },
   },
-})
+});

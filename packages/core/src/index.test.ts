@@ -1,5 +1,5 @@
-import { describe, expect, it, afterEach, vi, beforeEach } from 'vitest'
-import { mergeConfig, build, normalizePath, UserConfig } from 'vite'
+import { describe, expect, it, afterEach, vi, beforeEach } from 'vitest';
+import { mergeConfig, build, normalizePath, UserConfig } from 'vite';
 import {
   existsSync,
   mkdirSync,
@@ -7,15 +7,15 @@ import {
   // lstatSync,
   // readdirSync,
   // readFileSync,
-} from 'node:fs'
+} from 'node:fs';
 import {
   relative,
   join,
   // resolve,
   // sep,
-} from 'node:path'
+} from 'node:path';
 
-import _config from '../../playground/vite.config'
+import _config from '../vite.config';
 import viteImagemin, {
   parseOptions,
   parsePlugins,
@@ -24,47 +24,47 @@ import viteImagemin, {
   processResults,
   logResults,
   logErrors,
-} from './index'
+} from './index';
 
 // Your chosen Imagemin plugins:
-import imageminMozjpeg from 'imagemin-mozjpeg'
+import imageminMozjpeg from 'imagemin-mozjpeg';
 // import imageminJpegtran from 'imagemin-jpegtran'
 // import imageminJpegoptim from 'imagemin-jpegoptim'
 // import imageminPngquant from 'imagemin-pngquant'
 // import imageminOptipng from 'imagemin-optipng'
-import imageminOxipng from '@vheemstra/imagemin-oxipng'
-import imageminGifsicle from 'imagemin-gifsicle'
-import imageminSvgo from 'imagemin-svgo'
-import imageminWebp from 'imagemin-webp'
-import imageminGif2webp from 'imagemin-gif2webp'
+import imageminOxipng from '@vheemstra/imagemin-oxipng';
+import imageminGifsicle from 'imagemin-gifsicle';
+import imageminSvgo from 'imagemin-svgo';
+import imageminWebp from 'imagemin-webp';
+import imageminGif2webp from 'imagemin-gif2webp';
 // import imageminAvif from 'imagemin-avif'
-import imageminAvif from '@vheemstra/imagemin-avifenc'
+import imageminAvif from '@vheemstra/imagemin-avifenc';
 
-import type { Plugin } from 'imagemin'
+import type { Plugin } from 'imagemin';
 import type {
   ConfigOptions,
   Logger,
   ProcessFileParams,
   ProcessResult,
   ResolvedConfigOptions,
-} from './typings'
+} from './typings';
 
 /**
  * Prepare playground config without viteImagemin plugin
  */
-const config = _config as UserConfig
+const config = _config as UserConfig;
 const playgroundConfig = {
   ...config,
   plugins:
-    config?.plugins?.filter(p => {
+    config?.plugins?.filter((p) => {
       return !(
         p &&
         !Array.isArray(p) &&
         !(p instanceof Promise) &&
         p?.name === 'vite-plugin-imagemin'
-      )
+      );
     }) || [],
-}
+};
 
 /**
  * Default build config for all tests
@@ -81,7 +81,7 @@ const buildConfig = {
     emptyOutDir: false,
     minify: false,
   },
-}
+};
 const getBuildConfig = (plugin, extraOptions = {}) =>
   mergeConfig(
     buildConfig,
@@ -90,73 +90,73 @@ const getBuildConfig = (plugin, extraOptions = {}) =>
         ...playgroundConfig,
         plugins: playgroundConfig.plugins.concat(plugin),
       },
-      extraOptions,
-    ),
-  )
+      extraOptions
+    )
+  );
 
-const root = 'packages/playground'
-const skipBuilds = typeof process.env.VITEST_SKIP_BUILDS !== 'undefined'
+const root = 'packages/playground';
+const skipBuilds = typeof process.env.VITEST_SKIP_BUILDS !== 'undefined';
 
-const mockPlugin: Plugin = b => Promise.resolve(b)
-const mockFormatFilePath = (f: string) => `__${f}__`
+const mockPlugin: Plugin = (b) => Promise.resolve(b);
+const mockFormatFilePath = (f: string) => `__${f}__`;
 const mockLogger: Logger = {
   info: (msg: string) => msg,
   warn: (msg: string) => msg,
   error: (msg: string) => msg,
-}
+};
 
 describe('parsePlugins', () => {
   it('false on false, empty or invalid', () => {
     // @ts-expect-error testing wrong argument type
-    expect(parsePlugins(null)).toBe(false)
+    expect(parsePlugins(null)).toBe(false);
     // @ts-expect-error testing wrong argument type
-    expect(parsePlugins(undefined)).toBe(false)
+    expect(parsePlugins(undefined)).toBe(false);
     // @ts-expect-error testing wrong argument type
-    expect(parsePlugins(false)).toBe(false)
+    expect(parsePlugins(false)).toBe(false);
     // @ts-expect-error testing wrong argument type
-    expect(parsePlugins(true)).toBe(false)
+    expect(parsePlugins(true)).toBe(false);
     // @ts-expect-error testing wrong argument type
-    expect(parsePlugins([])).toBe(false)
-    expect(parsePlugins({})).toBe(false)
+    expect(parsePlugins([])).toBe(false);
+    expect(parsePlugins({})).toBe(false);
     // @ts-expect-error testing wrong argument type
-    expect(parsePlugins({ ext: null })).toBe(false)
+    expect(parsePlugins({ ext: null })).toBe(false);
     // @ts-expect-error testing wrong argument type
-    expect(parsePlugins({ ext: [null] })).toBe(false)
+    expect(parsePlugins({ ext: [null] })).toBe(false);
     // @ts-expect-error testing wrong argument type
-    expect(parsePlugins({ ext: ['test', false] })).toBe(false)
-  })
+    expect(parsePlugins({ ext: ['test', false] })).toBe(false);
+  });
 
   it('returns filtered plugins array', () => {
     expect(parsePlugins({ ext: mockPlugin })).toMatchObject({
       ext: [mockPlugin],
-    })
+    });
 
     expect(parsePlugins({ ext: [mockPlugin] })).toMatchObject({
       ext: [mockPlugin],
-    })
+    });
 
     expect(
       // @ts-expect-error testing wrong argument type
-      parsePlugins({ ext: ['test', mockPlugin, false, mockPlugin] }),
-    ).toMatchObject({ ext: [mockPlugin, mockPlugin] })
-  })
-})
+      parsePlugins({ ext: ['test', mockPlugin, false, mockPlugin] })
+    ).toMatchObject({ ext: [mockPlugin, mockPlugin] });
+  });
+});
 
 describe('parseOptions', () => {
   describe('options.plugins', () => {
     it('false on empty or invalid', () => {
       // @ts-expect-error testing wrong argument type
-      expect(parseOptions()).toBe(false)
+      expect(parseOptions()).toBe(false);
       // @ts-expect-error testing wrong argument type
-      expect(parseOptions({})).toBe(false)
-    })
-  })
+      expect(parseOptions({})).toBe(false);
+    });
+  });
 
   describe('options.makeAvif', () => {
     const base = {
       plugins: { ext: mockPlugin },
       makeAvif: { plugins: { ext: mockPlugin } },
-    }
+    };
 
     it.each([
       ['bool ', false],
@@ -169,85 +169,85 @@ describe('parseOptions', () => {
       const parsedOptions = parseOptions({
         plugins: { ext: mockPlugin },
         makeAvif: v,
-      }) as ResolvedConfigOptions
-      expect(parsedOptions).toHaveProperty('makeAvif')
-      expect(parsedOptions.makeAvif).toBe(false)
-    })
+      }) as ResolvedConfigOptions;
+      expect(parsedOptions).toHaveProperty('makeAvif');
+      expect(parsedOptions.makeAvif).toBe(false);
+    });
 
     it('formatFilePath is default or valid callback', () => {
       let options: ConfigOptions & {
-        makeAvif: Exclude<ConfigOptions['makeAvif'], undefined>
-      }
-      let parsedOptions: false | ResolvedConfigOptions
+        makeAvif: Exclude<ConfigOptions['makeAvif'], undefined>;
+      };
+      let parsedOptions: false | ResolvedConfigOptions;
 
-      options = Object.assign({}, base)
+      options = Object.assign({}, base);
       // @ts-expect-error testing wrong argument type
-      options.makeAvif.formatFilePath = {}
-      parsedOptions = parseOptions(options)
-      expect(parsedOptions).toHaveProperty('makeAvif.formatFilePath')
+      options.makeAvif.formatFilePath = {};
+      parsedOptions = parseOptions(options);
+      expect(parsedOptions).toHaveProperty('makeAvif.formatFilePath');
       // @ts-expect-error asserting existence of correct type
-      expect(parsedOptions.makeAvif.formatFilePath).toBeTypeOf('function')
+      expect(parsedOptions.makeAvif.formatFilePath).toBeTypeOf('function');
       // @ts-expect-error asserting existence of correct type
-      expect(parsedOptions.makeAvif.formatFilePath('XXX')).toBe('XXX.avif')
+      expect(parsedOptions.makeAvif.formatFilePath('XXX')).toBe('XXX.avif');
 
-      options = Object.assign({}, base)
-      options.makeAvif.formatFilePath = mockFormatFilePath
-      parsedOptions = parseOptions(options)
+      options = Object.assign({}, base);
+      options.makeAvif.formatFilePath = mockFormatFilePath;
+      parsedOptions = parseOptions(options);
       expect(parsedOptions).toMatchObject({
         makeAvif: {
           plugins: { ext: [mockPlugin] },
           formatFilePath: mockFormatFilePath,
         },
-      })
+      });
       // @ts-expect-error asserting existence of correct type
-      expect(parsedOptions.makeAvif.formatFilePath('XXX')).toBe('__XXX__')
-    })
+      expect(parsedOptions.makeAvif.formatFilePath('XXX')).toBe('__XXX__');
+    });
 
     it('skipIfLargerThan is false, string or default', () => {
       let options: ConfigOptions & {
-        makeAvif: Exclude<ConfigOptions['makeAvif'], undefined>
-      }
-      let parsedOptions: false | ResolvedConfigOptions
-      const defaultVal = 'optimized'
+        makeAvif: Exclude<ConfigOptions['makeAvif'], undefined>;
+      };
+      let parsedOptions: false | ResolvedConfigOptions;
+      const defaultVal = 'optimized';
 
-      options = Object.assign({}, base)
-      options.makeAvif.skipIfLargerThan = false
-      parsedOptions = parseOptions(options)
-      expect(parsedOptions).toHaveProperty('makeAvif.skipIfLargerThan', false)
+      options = Object.assign({}, base);
+      options.makeAvif.skipIfLargerThan = false;
+      parsedOptions = parseOptions(options);
+      expect(parsedOptions).toHaveProperty('makeAvif.skipIfLargerThan', false);
 
-      options = Object.assign({}, base)
-      options.makeAvif.skipIfLargerThan = 'original'
-      parsedOptions = parseOptions(options)
+      options = Object.assign({}, base);
+      options.makeAvif.skipIfLargerThan = 'original';
+      parsedOptions = parseOptions(options);
       expect(parsedOptions).toHaveProperty(
         'makeAvif.skipIfLargerThan',
-        'original',
-      )
+        'original'
+      );
 
-      options = Object.assign({}, base)
+      options = Object.assign({}, base);
       // @ts-expect-error testing wrong argument type
-      options.makeAvif.skipIfLargerThan = true
-      parsedOptions = parseOptions(options)
+      options.makeAvif.skipIfLargerThan = true;
+      parsedOptions = parseOptions(options);
       expect(parsedOptions).toHaveProperty(
         'makeAvif.skipIfLargerThan',
-        defaultVal,
-      )
+        defaultVal
+      );
 
-      options = Object.assign({}, base)
+      options = Object.assign({}, base);
       // @ts-expect-error testing wrong argument type
-      options.makeAvif.skipIfLargerThan = {}
-      parsedOptions = parseOptions(options)
+      options.makeAvif.skipIfLargerThan = {};
+      parsedOptions = parseOptions(options);
       expect(parsedOptions).toHaveProperty(
         'makeAvif.skipIfLargerThan',
-        defaultVal,
-      )
-    })
-  })
+        defaultVal
+      );
+    });
+  });
 
   describe('options.makeWebp', () => {
     const base = {
       plugins: { ext: mockPlugin },
       makeWebp: { plugins: { ext: mockPlugin } },
-    }
+    };
 
     it.each([
       ['bool ', false],
@@ -260,321 +260,321 @@ describe('parseOptions', () => {
       const parsedOptions = parseOptions({
         plugins: { ext: mockPlugin },
         makeWebp: v,
-      }) as ResolvedConfigOptions
-      expect(parsedOptions).toHaveProperty('makeWebp')
-      expect(parsedOptions.makeWebp).toBe(false)
-    })
+      }) as ResolvedConfigOptions;
+      expect(parsedOptions).toHaveProperty('makeWebp');
+      expect(parsedOptions.makeWebp).toBe(false);
+    });
 
     it('formatFilePath is default or valid callback', () => {
       let options: ConfigOptions & {
-        makeWebp: Exclude<ConfigOptions['makeWebp'], undefined>
-      }
-      let parsedOptions: false | ResolvedConfigOptions
+        makeWebp: Exclude<ConfigOptions['makeWebp'], undefined>;
+      };
+      let parsedOptions: false | ResolvedConfigOptions;
 
-      options = Object.assign({}, base)
+      options = Object.assign({}, base);
       // @ts-expect-error testing wrong argument type
-      options.makeWebp.formatFilePath = {}
-      parsedOptions = parseOptions(options)
-      expect(parsedOptions).toHaveProperty('makeWebp.formatFilePath')
+      options.makeWebp.formatFilePath = {};
+      parsedOptions = parseOptions(options);
+      expect(parsedOptions).toHaveProperty('makeWebp.formatFilePath');
       // @ts-expect-error asserting existence of correct type
-      expect(parsedOptions.makeWebp.formatFilePath).toBeTypeOf('function')
+      expect(parsedOptions.makeWebp.formatFilePath).toBeTypeOf('function');
       // @ts-expect-error asserting existence of correct type
-      expect(parsedOptions.makeWebp.formatFilePath('XXX')).toBe('XXX.webp')
+      expect(parsedOptions.makeWebp.formatFilePath('XXX')).toBe('XXX.webp');
 
-      options = Object.assign({}, base)
-      options.makeWebp.formatFilePath = mockFormatFilePath
-      parsedOptions = parseOptions(options)
+      options = Object.assign({}, base);
+      options.makeWebp.formatFilePath = mockFormatFilePath;
+      parsedOptions = parseOptions(options);
       expect(parsedOptions).toMatchObject({
         makeWebp: {
           plugins: { ext: [mockPlugin] },
           formatFilePath: mockFormatFilePath,
         },
-      })
+      });
       // @ts-expect-error asserting existence of correct type
-      expect(parsedOptions.makeWebp.formatFilePath('XXX')).toBe('__XXX__')
-    })
+      expect(parsedOptions.makeWebp.formatFilePath('XXX')).toBe('__XXX__');
+    });
 
     it('skipIfLargerThan is false, string or default', () => {
       let options: ConfigOptions & {
-        makeWebp: Exclude<ConfigOptions['makeWebp'], undefined>
-      }
-      let parsedOptions: false | ResolvedConfigOptions
-      const defaultVal = 'optimized'
+        makeWebp: Exclude<ConfigOptions['makeWebp'], undefined>;
+      };
+      let parsedOptions: false | ResolvedConfigOptions;
+      const defaultVal = 'optimized';
 
-      options = Object.assign({}, base)
-      options.makeWebp.skipIfLargerThan = false
-      parsedOptions = parseOptions(options)
-      expect(parsedOptions).toHaveProperty('makeWebp.skipIfLargerThan', false)
+      options = Object.assign({}, base);
+      options.makeWebp.skipIfLargerThan = false;
+      parsedOptions = parseOptions(options);
+      expect(parsedOptions).toHaveProperty('makeWebp.skipIfLargerThan', false);
 
-      options = Object.assign({}, base)
-      options.makeWebp.skipIfLargerThan = 'original'
-      parsedOptions = parseOptions(options)
+      options = Object.assign({}, base);
+      options.makeWebp.skipIfLargerThan = 'original';
+      parsedOptions = parseOptions(options);
       expect(parsedOptions).toHaveProperty(
         'makeWebp.skipIfLargerThan',
-        'original',
-      )
+        'original'
+      );
 
-      options = Object.assign({}, base)
+      options = Object.assign({}, base);
       // @ts-expect-error testing wrong argument type
-      options.makeWebp.skipIfLargerThan = true
-      parsedOptions = parseOptions(options)
+      options.makeWebp.skipIfLargerThan = true;
+      parsedOptions = parseOptions(options);
       expect(parsedOptions).toHaveProperty(
         'makeWebp.skipIfLargerThan',
-        defaultVal,
-      )
+        defaultVal
+      );
 
-      options = Object.assign({}, base)
+      options = Object.assign({}, base);
       // @ts-expect-error testing wrong argument type
-      options.makeWebp.skipIfLargerThan = {}
-      parsedOptions = parseOptions(options)
+      options.makeWebp.skipIfLargerThan = {};
+      parsedOptions = parseOptions(options);
       expect(parsedOptions).toHaveProperty(
         'makeWebp.skipIfLargerThan',
-        defaultVal,
-      )
-    })
-  })
+        defaultVal
+      );
+    });
+  });
 
   // TODO? better types for options/parsedOptions etc (see above)
   describe('options.root', () => {
     it('is provided string or undefined', () => {
       const base = {
         plugins: { ext: mockPlugin },
-      }
-      let options
+      };
+      let options;
 
-      options = Object.assign({}, base)
-      options.root = false
-      options = parseOptions(options)
-      expect(options).toHaveProperty('root')
-      expect(options.root).toBeUndefined()
+      options = Object.assign({}, base);
+      options.root = false;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('root');
+      expect(options.root).toBeUndefined();
 
-      options = Object.assign({}, base)
-      options.root = true
-      options = parseOptions(options)
-      expect(options).toHaveProperty('root')
-      expect(options.root).toBeUndefined()
+      options = Object.assign({}, base);
+      options.root = true;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('root');
+      expect(options.root).toBeUndefined();
 
-      options = Object.assign({}, base)
-      options.root = ''
-      options = parseOptions(options)
-      expect(options).toHaveProperty('root', '')
+      options = Object.assign({}, base);
+      options.root = '';
+      options = parseOptions(options);
+      expect(options).toHaveProperty('root', '');
 
-      options = Object.assign({}, base)
-      options.root = 'test'
-      options = parseOptions(options)
-      expect(options).toHaveProperty('root', 'test')
-    })
-  })
+      options = Object.assign({}, base);
+      options.root = 'test';
+      options = parseOptions(options);
+      expect(options).toHaveProperty('root', 'test');
+    });
+  });
 
   describe('options.include', () => {
     it('is provided pattern or default', () => {
       const base = {
         plugins: { ext: mockPlugin },
-      }
-      const defaultVal = [/\.(png|jpg|jpeg|gif|svg)$/i]
-      let options
+      };
+      const defaultVal = [/\.(png|jpg|jpeg|gif|svg)$/i];
+      let options;
 
-      options = Object.assign({}, base)
-      options.include = false
-      options = parseOptions(options)
-      expect(options).toHaveProperty('include', defaultVal)
+      options = Object.assign({}, base);
+      options.include = false;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('include', defaultVal);
 
-      options = Object.assign({}, base)
-      options.include = 'test'
-      options = parseOptions(options)
-      expect(options).toHaveProperty('include', 'test')
-    })
-  })
+      options = Object.assign({}, base);
+      options.include = 'test';
+      options = parseOptions(options);
+      expect(options).toHaveProperty('include', 'test');
+    });
+  });
 
   describe('options.exclude', () => {
     it('is provided pattern or default', () => {
       const base = {
         plugins: { ext: mockPlugin },
-      }
-      const defaultVal = [/node_modules/]
-      let options
+      };
+      const defaultVal = [/node_modules/];
+      let options;
 
-      options = Object.assign({}, base)
-      options.exclude = false
-      options = parseOptions(options)
-      expect(options).toHaveProperty('exclude', defaultVal)
+      options = Object.assign({}, base);
+      options.exclude = false;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('exclude', defaultVal);
 
-      options = Object.assign({}, base)
-      options.exclude = 'test'
-      options = parseOptions(options)
-      expect(options).toHaveProperty('exclude', 'test')
-    })
-  })
+      options = Object.assign({}, base);
+      options.exclude = 'test';
+      options = parseOptions(options);
+      expect(options).toHaveProperty('exclude', 'test');
+    });
+  });
 
   describe('options.onlyAssets', () => {
     it('is provided boolean or default', () => {
       const base = {
         plugins: { ext: mockPlugin },
-      }
-      const defaultVal = false
-      let options
+      };
+      const defaultVal = false;
+      let options;
 
-      options = Object.assign({}, base)
-      options.onlyAssets = 'test'
-      options = parseOptions(options)
-      expect(options).toHaveProperty('onlyAssets', defaultVal)
+      options = Object.assign({}, base);
+      options.onlyAssets = 'test';
+      options = parseOptions(options);
+      expect(options).toHaveProperty('onlyAssets', defaultVal);
 
-      options = Object.assign({}, base)
-      options.onlyAssets = false
-      options = parseOptions(options)
-      expect(options).toHaveProperty('onlyAssets', false)
+      options = Object.assign({}, base);
+      options.onlyAssets = false;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('onlyAssets', false);
 
-      options = Object.assign({}, base)
-      options.onlyAssets = true
-      options = parseOptions(options)
-      expect(options).toHaveProperty('onlyAssets', true)
-    })
-  })
+      options = Object.assign({}, base);
+      options.onlyAssets = true;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('onlyAssets', true);
+    });
+  });
 
   describe('options.formatFilePath', () => {
     it('is provided or undefined', () => {
       const base = {
         plugins: { ext: mockPlugin },
         makeWebp: { plugins: { ext: mockPlugin } },
-      }
-      let options
+      };
+      let options;
 
-      options = Object.assign({}, base)
-      options.formatFilePath = {}
-      options = parseOptions(options)
-      expect(options).toHaveProperty('formatFilePath')
-      expect(options.formatFilePath).toBeTypeOf('function')
-      expect(options.formatFilePath('XXX')).toBe('XXX')
+      options = Object.assign({}, base);
+      options.formatFilePath = {};
+      options = parseOptions(options);
+      expect(options).toHaveProperty('formatFilePath');
+      expect(options.formatFilePath).toBeTypeOf('function');
+      expect(options.formatFilePath('XXX')).toBe('XXX');
 
-      options = Object.assign({}, base)
-      options.formatFilePath = mockFormatFilePath
-      options = parseOptions(options)
-      expect(options).toHaveProperty('formatFilePath')
-      expect(options.formatFilePath).toBeTypeOf('function')
-      expect(options.formatFilePath('XXX')).toBe('__XXX__')
-    })
-  })
+      options = Object.assign({}, base);
+      options.formatFilePath = mockFormatFilePath;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('formatFilePath');
+      expect(options.formatFilePath).toBeTypeOf('function');
+      expect(options.formatFilePath('XXX')).toBe('__XXX__');
+    });
+  });
 
   describe('options.skipIfLarger', () => {
     it('is provided boolean or default', () => {
       const base = {
         plugins: { ext: mockPlugin },
-      }
-      const defaultVal = true
-      let options
+      };
+      const defaultVal = true;
+      let options;
 
-      options = Object.assign({}, base)
-      options.skipIfLarger = 'test'
-      options = parseOptions(options)
-      expect(options).toHaveProperty('skipIfLarger', defaultVal)
+      options = Object.assign({}, base);
+      options.skipIfLarger = 'test';
+      options = parseOptions(options);
+      expect(options).toHaveProperty('skipIfLarger', defaultVal);
 
-      options = Object.assign({}, base)
-      options.skipIfLarger = false
-      options = parseOptions(options)
-      expect(options).toHaveProperty('skipIfLarger', false)
+      options = Object.assign({}, base);
+      options.skipIfLarger = false;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('skipIfLarger', false);
 
-      options = Object.assign({}, base)
-      options.skipIfLarger = true
-      options = parseOptions(options)
-      expect(options).toHaveProperty('skipIfLarger', true)
-    })
-  })
+      options = Object.assign({}, base);
+      options.skipIfLarger = true;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('skipIfLarger', true);
+    });
+  });
 
   describe('options.verbose', () => {
     it('is provided boolean or default', () => {
       const base = {
         plugins: { ext: mockPlugin },
-      }
-      const defaultVal = true
-      let options
+      };
+      const defaultVal = true;
+      let options;
 
-      options = Object.assign({}, base)
-      options.verbose = 'test'
-      options = parseOptions(options)
-      expect(options).toHaveProperty('verbose', defaultVal)
+      options = Object.assign({}, base);
+      options.verbose = 'test';
+      options = parseOptions(options);
+      expect(options).toHaveProperty('verbose', defaultVal);
 
-      options = Object.assign({}, base)
-      options.verbose = false
-      options = parseOptions(options)
-      expect(options).toHaveProperty('verbose', false)
+      options = Object.assign({}, base);
+      options.verbose = false;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('verbose', false);
 
-      options = Object.assign({}, base)
-      options.verbose = true
-      options = parseOptions(options)
-      expect(options).toHaveProperty('verbose', true)
-    })
-  })
+      options = Object.assign({}, base);
+      options.verbose = true;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('verbose', true);
+    });
+  });
 
-  describe.todo('options.logger')
+  describe.todo('options.logger');
 
   describe('options.logByteDivider', () => {
     it('is provided number or default', () => {
       const base = {
         plugins: { ext: mockPlugin },
-      }
-      const defaultVal = 1000
-      let options
+      };
+      const defaultVal = 1000;
+      let options;
 
-      options = Object.assign({}, base)
-      options.logByteDivider = 'test'
-      options = parseOptions(options)
-      expect(options).toHaveProperty('logByteDivider', defaultVal)
+      options = Object.assign({}, base);
+      options.logByteDivider = 'test';
+      options = parseOptions(options);
+      expect(options).toHaveProperty('logByteDivider', defaultVal);
 
-      options = Object.assign({}, base)
-      options.logByteDivider = 0
-      options = parseOptions(options)
-      expect(options).toHaveProperty('logByteDivider', defaultVal)
+      options = Object.assign({}, base);
+      options.logByteDivider = 0;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('logByteDivider', defaultVal);
 
-      options = Object.assign({}, base)
-      options.logByteDivider = 1024
-      options = parseOptions(options)
-      expect(options).toHaveProperty('logByteDivider', 1024)
+      options = Object.assign({}, base);
+      options.logByteDivider = 1024;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('logByteDivider', 1024);
 
-      options = Object.assign({}, base)
-      options.logByteDivider = 27
-      options = parseOptions(options)
-      expect(options).toHaveProperty('logByteDivider', 27)
-    })
-  })
-})
+      options = Object.assign({}, base);
+      options.logByteDivider = 27;
+      options = parseOptions(options);
+      expect(options).toHaveProperty('logByteDivider', 27);
+    });
+  });
+});
 
 describe('getAllFiles', () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
   it('gets all files recursively as an array', () => {
-    const spy = vi.spyOn(mockLogger, 'error')
+    const spy = vi.spyOn(mockLogger, 'error');
     // expect(spy.getMockName()).toEqual('error')
 
-    const files = getAllFiles(join(root, 'public'), mockLogger)
-    expect(spy).not.toHaveBeenCalled()
-    expect(files).toHaveLength(23)
-    expect(files).toContain(join(root, 'public', 'from_public.svg'))
+    const files = getAllFiles(join(root, 'public'), mockLogger);
+    expect(spy).not.toHaveBeenCalled();
+    expect(files).toHaveLength(23);
+    expect(files).toContain(join(root, 'public', 'from_public.svg'));
     // expect(files).toEqual(['from_public.svg'])
-  })
+  });
 
   it('logs ENOENT error on non-existing path', () => {
-    const spy = vi.spyOn(mockLogger, 'error')
+    const spy = vi.spyOn(mockLogger, 'error');
     // expect(spy.getMockName()).toEqual('error')
 
-    getAllFiles(join(root, 'non-existing-directory'), mockLogger)
-    expect(spy).toHaveBeenCalledTimes(1)
+    getAllFiles(join(root, 'non-existing-directory'), mockLogger);
+    expect(spy).toHaveBeenCalledTimes(1);
     // expect(spy).toHaveBeenCalledWith('Error: ')
     // expect(spy).toHaveReturnedWith('Error: ')
     expect(spy.mock.results[0].value).toMatch(
-      /^Error: ENOENT: no such file or directory/,
-    )
-  })
-})
+      /^Error: ENOENT: no such file or directory/
+    );
+  });
+});
 
 describe('processFile', () => {
   it('returns error object if NO INPUT file', async () => {
     // @ts-expect-error testing wrong argument type
     await expect(processFile({})).rejects.toMatchObject({
       error: 'Empty filepath',
-    })
-  })
+    });
+  });
 
   it('returns error object if NO OUTPUT job', async () => {
     await expect(
@@ -582,11 +582,11 @@ describe('processFile', () => {
       processFile({
         filePathFrom: 'ignore.ext',
         fileToStack: [],
-      }),
+      })
     ).rejects.toMatchObject({
       error: 'Empty to-stack',
-    })
-  })
+    });
+  });
 
   it('returns error object if INPUT READ error', async () => {
     await expect(
@@ -600,19 +600,19 @@ describe('processFile', () => {
             skipIfLarger: false,
           },
         ],
-      }),
+      })
     ).rejects.toHaveProperty(
       'error',
-      expect.stringMatching(/^Error reading file/),
-    )
-  })
+      expect.stringMatching(/^Error reading file/)
+    );
+  });
 
   it('returns error object if INPUT IS APNG file (skip)', async () => {
     await expect(
       // @ts-expect-error missing properties are used after expected error
       processFile({
         filePathFrom: normalizePath(
-          join('public', 'images', 'animated-transparent-1.png'),
+          join('public', 'images', 'animated-transparent-1.png')
         ),
         fileToStack: [
           {
@@ -622,11 +622,11 @@ describe('processFile', () => {
           },
         ],
         baseDir: normalizePath(root) + '/',
-      }),
+      })
     ).rejects.toMatchObject({
       error: 'Animated PNGs not supported',
-    })
-  })
+    });
+  });
 
   it('returns error object if OUTPUT PROCESS error (Error & string)', async () => {
     await expect(
@@ -650,15 +650,15 @@ describe('processFile', () => {
           },
         ],
         baseDir: normalizePath(root) + '/',
-      }),
+      })
     ).resolves.toContainEqual({
       status: 'rejected',
       reason: expect.objectContaining({
         error: expect.stringMatching(
-          /^Error processing file:\s+Test error processing file/,
+          /^Error processing file:\s+Test error processing file/
         ),
       }),
-    })
+    });
 
     await expect(
       // @ts-expect-error missing properties are used after expected error
@@ -681,16 +681,16 @@ describe('processFile', () => {
           },
         ],
         baseDir: normalizePath(root) + '/',
-      }),
+      })
     ).resolves.toContainEqual({
       status: 'rejected',
       reason: expect.objectContaining({
         error: expect.stringMatching(
-          /^Error processing file:\s*Test error processing file/,
+          /^Error processing file:\s*Test error processing file/
         ),
       }),
-    })
-  })
+    });
+  });
 
   it('returns error object if OUTPUT WRITE error', async () => {
     await expect(
@@ -705,20 +705,20 @@ describe('processFile', () => {
           },
         ],
         baseDir: normalizePath(root) + '/',
-      }),
+      })
     ).resolves.toContainEqual({
       status: 'rejected',
       reason: expect.objectContaining({
         error: expect.stringMatching(/^Error writing file/),
       }),
-    })
-  })
+    });
+  });
 
   describe('returns based on size and options.skipIfLarger', () => {
-    let cnt = 0
+    let cnt = 0;
 
     // skipIfLarger modes
-    ;[
+    [
       [false as const, [true, true, true]] as const,
       ['original' as const, [true, true, false]] as const,
       ['optimized' as const, [true, true, false]] as const,
@@ -735,11 +735,11 @@ describe('processFile', () => {
           ratio: 2,
           duration: 0,
         },
-      }
-      const expectedResults: any[] = []
+      };
+      const expectedResults: any[] = [];
 
       // output file sizes
-      ;[
+      [
         [
           // smaller
           () => Promise.resolve(Buffer.from('less')),
@@ -782,13 +782,13 @@ describe('processFile', () => {
           toPath: `test/skip${cnt++}.svg`,
           plugins: [cb],
           skipIfLarger: skipMode,
-        })
+        });
 
         if (expected[j]) {
           expectedResults.push({
             status: 'fulfilled',
             value: expect.objectContaining(fullfilledResult),
-          })
+          });
         } else {
           // TODO: rewrite different test? (or remove this one)
           //       - that checks the logs for skipped files
@@ -803,22 +803,22 @@ describe('processFile', () => {
           expectedResults.push({
             status: 'fulfilled',
             value: expect.objectContaining(fullfilledResult),
-          })
+          });
         }
-      })
+      });
 
       it(`returns ${expected
         .map((b: boolean) => (b ? 'SUCCESS' : 'SKIP   '))
         .join(
-          ' / ',
+          ' / '
         )}   for sizes SMALLER / EQUAL / LARGER   when skipIfLarger = ${String(
-        skipMode,
+        skipMode
       )}`, async () => {
-        await expect(processFile(stack)).resolves.toEqual(expectedResults)
-      })
-    })
-  })
-})
+        await expect(processFile(stack)).resolves.toEqual(expectedResults);
+      });
+    });
+  });
+});
 
 describe('processResults', () => {
   it('returns grouped, categorized results with correct stats', () => {
@@ -930,7 +930,7 @@ describe('processResults', () => {
           },
         ],
       },
-    ]
+    ];
 
     expect(processResults(processedFiles)).toEqual({
       // totalTime: 600,
@@ -1033,17 +1033,17 @@ describe('processResults', () => {
           },
         ],
       },
-    })
-  })
-})
+    });
+  });
+});
 
 describe('logResults', () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
   it('display right colors for items', () => {
-    const spy = vi.spyOn(mockLogger, 'info')
+    const spy = vi.spyOn(mockLogger, 'info');
 
     logResults(
       [
@@ -1131,18 +1131,18 @@ describe('logResults', () => {
         newSize: 10,
         ratio: 10,
         duration: 10,
-      },
-    )
-    expect(spy).toHaveBeenCalled()
-    expect(spy).toHaveBeenCalledTimes(6)
+      }
+    );
+    expect(spy).toHaveBeenCalled();
+    expect(spy).toHaveBeenCalledTimes(6);
     // expect(spy).toHaveBeenCalledWith('Error: ')
     // expect(spy).toHaveReturnedWith('Error: ')
     expect(spy.mock.results[1].value).toMatch(
-      /dist\/.*to\.ext.+90 KiB.+-10 %.+100 ms/,
-    )
+      /dist\/.*to\.ext.+90 KiB.+-10 %.+100 ms/
+    );
     expect(spy.mock.results[2].value).toMatch(
-      /dist\/.*to\.ext.+110 KiB.+\+10 %.+100 ms/,
-    )
+      /dist\/.*to\.ext.+110 KiB.+\+10 %.+100 ms/
+    );
     // expect(spy.mock.results[2].value).toMatch(
     //   /* eslint-disable-next-line no-control-regex */
     //   // /\u001b\[31m/, // red
@@ -1152,32 +1152,32 @@ describe('logResults', () => {
     //   /\u001b\[3[1-3]m/, // red, green or yellow
     // )
     expect(spy.mock.results[3].value).toMatch(
-      /dist\/.*to\.ext.+100 KiB.+0 %.+100 ms/,
-    )
+      /dist\/.*to\.ext.+100 KiB.+0 %.+100 ms/
+    );
     // expect(spy.mock.results[4].value).not.toMatch(
     //   /* eslint-disable-next-line no-control-regex */
     //   /\u001b\[3[1-3]m/, // red, green or yellow
     // )
     expect(spy.mock.results[4].value).toMatch(
-      /dist\/.*to\.ext\.avif.+ │ Skipped │ Larger than optimized/,
-    )
+      /dist\/.*to\.ext\.avif.+ │ Skipped │ Larger than optimized/
+    );
     // expect(spy.mock.results[5].value).not.toMatch(
     //   /* eslint-disable-next-line no-control-regex */
     //   /\u001b\[3[1-3]m/, // red, green or yellow
     // )
     expect(spy.mock.results[5].value).toMatch(
-      /dist\/.*to\.ext\.webp.+ │ Skipped │ Larger than smallest/,
-    )
-  })
-})
+      /dist\/.*to\.ext\.webp.+ │ Skipped │ Larger than smallest/
+    );
+  });
+});
 
 describe('logErrors', () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
   it('display right colors for items', () => {
-    const spy = vi.spyOn(mockLogger, 'info')
+    const spy = vi.spyOn(mockLogger, 'info');
 
     const maxLengths = {
       oldPath: 15,
@@ -1186,7 +1186,7 @@ describe('logErrors', () => {
       newSize: 10,
       ratio: 10,
       duration: 10,
-    }
+    };
 
     logErrors(
       [
@@ -1210,8 +1210,8 @@ describe('logErrors', () => {
         },
       ],
       mockLogger,
-      maxLengths,
-    )
+      maxLengths
+    );
     logErrors(
       [
         {
@@ -1222,8 +1222,8 @@ describe('logErrors', () => {
         },
       ],
       mockLogger,
-      maxLengths,
-    )
+      maxLengths
+    );
     logErrors(
       [
         {
@@ -1234,8 +1234,8 @@ describe('logErrors', () => {
         },
       ],
       mockLogger,
-      maxLengths,
-    )
+      maxLengths
+    );
     logErrors(
       [
         {
@@ -1246,8 +1246,8 @@ describe('logErrors', () => {
         },
       ],
       mockLogger,
-      maxLengths,
-    )
+      maxLengths
+    );
     logErrors(
       [
         {
@@ -1258,8 +1258,8 @@ describe('logErrors', () => {
         },
       ],
       mockLogger,
-      maxLengths,
-    )
+      maxLengths
+    );
     logErrors(
       [
         {
@@ -1270,8 +1270,8 @@ describe('logErrors', () => {
         },
       ],
       mockLogger,
-      maxLengths,
-    )
+      maxLengths
+    );
     logErrors(
       [
         {
@@ -1282,33 +1282,33 @@ describe('logErrors', () => {
         },
       ],
       mockLogger,
-      maxLengths,
-    )
+      maxLengths
+    );
 
-    expect(spy).toHaveBeenCalled()
-    expect(spy).toHaveBeenCalledTimes(2 + 3 + 6 * 3)
+    expect(spy).toHaveBeenCalled();
+    expect(spy).toHaveBeenCalledTimes(2 + 3 + 6 * 3);
     // For chalk's style codes, see:
     // https://github.com/chalk/chalk/blob/main/source/vendor/ansi-styles/index.js
     expect(spy.mock.results[2].value).toMatch(
-      / ERROR /, // bgRed
-    )
+      / ERROR / // bgRed
+    );
     expect(spy.mock.results[3].value).toMatch(
-      / WARNING /, // bgYellow
-    )
+      / WARNING / // bgYellow
+    );
     expect(spy.mock.results[4].value).toMatch(
-      / SKIPPED /, // bgWhite
-    )
+      / SKIPPED / // bgWhite
+    );
     expect(spy.mock.results[7].value).toMatch(
-      / ERROR /, // bgRed
-    )
+      / ERROR / // bgRed
+    );
     expect(spy.mock.results[10].value).toMatch(
-      / WARNING /, // bgYellow
-    )
+      / WARNING / // bgYellow
+    );
     expect(spy.mock.results[13].value).toMatch(
-      / SKIPPED /, // bgWhite
-    )
-  })
-})
+      / SKIPPED / // bgWhite
+    );
+  });
+});
 
 /**
  * Notes about output in playground (for making tests):
@@ -1346,34 +1346,34 @@ describe('logErrors', () => {
 // TODO: expand after-build checks
 
 describe.skipIf(skipBuilds)('viteImagemin', () => {
-  beforeEach(ctx => {
+  beforeEach((ctx) => {
     // Ensure empty temp dir for test
     const tempDir = normalizePath(
       //${process.env.VITEST_POOL_ID}
-      join(root, 'test', `temp${ctx.task.id}`),
-    )
+      join(root, 'test', `temp${ctx.task.id}`)
+    );
     if (existsSync(tempDir)) {
-      rmSync(tempDir, { recursive: true, force: true })
+      rmSync(tempDir, { recursive: true, force: true });
     }
-    mkdirSync(tempDir, { recursive: true, mode: 0o755 })
+    mkdirSync(tempDir, { recursive: true, mode: 0o755 });
 
     return () => {
       // Clean up temp dir
       if (existsSync(tempDir)) {
-        rmSync(tempDir, { recursive: true, force: true })
+        rmSync(tempDir, { recursive: true, force: true });
       }
-    }
-  })
+    };
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
   it(
     'default config',
     async ({ task, expect }) => {
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`))
-      const distDir = `${tempDir}/dist`
+      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+      const distDir = `${tempDir}/dist`;
       // const assetsDir = `${distDir}/assets`
       // const processDir = options.onlyAssets ? assetsDir : distDir
       // const baseDir = `${root}/`
@@ -1428,15 +1428,15 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
           // skipIfLargerThan: 'smallest',
         },
         cache: false,
-      }
+      };
 
       const testConfig = getBuildConfig(viteImagemin(options), {
         build: {
           outDir: normalizePath(relative(root, distDir)),
         },
-      })
+      });
 
-      await expect(build(testConfig)).resolves.toHaveProperty('output')
+      await expect(build(testConfig)).resolves.toHaveProperty('output');
 
       // import type { RollupOutput } from 'rollup';
 
@@ -1445,7 +1445,7 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
       // const files = readdirSync(dir)
       // const fileContentBuffer = readFileSync(filepath);
       // const fileContentString = readFileSync(filepath, {encoding: 'utf8', flag: 'r'});
-      expect(existsSync(distDir)).toBe(true)
+      expect(existsSync(distDir)).toBe(true);
 
       // TODO:
       // - check log output
@@ -1454,15 +1454,15 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
     },
     {
       timeout: 30000,
-    },
-  )
+    }
+  );
 
   it(
     'only-smallest config',
     async ({ task, expect }) => {
       // const spy = vi.spyOn(mockLogger, 'info')
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`))
-      const distDir = `${tempDir}/dist`
+      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+      const distDir = `${tempDir}/dist`;
 
       const options = {
         logByteDivider: 1024 as const,
@@ -1495,15 +1495,15 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
         },
         logger: mockLogger,
         cache: false,
-      }
+      };
 
       const testConfig = getBuildConfig(viteImagemin(options), {
         build: {
           outDir: normalizePath(relative(root, distDir)),
         },
-      })
+      });
 
-      await expect(build(testConfig)).resolves.toHaveProperty('output')
+      await expect(build(testConfig)).resolves.toHaveProperty('output');
 
       // import type { RollupOutput } from 'rollup';
 
@@ -1512,7 +1512,7 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
       // const files = readdirSync(dir)
       // const fileContentBuffer = readFileSync(filepath);
       // const fileContentString = readFileSync(filepath, {encoding: 'utf8', flag: 'r'});
-      expect(existsSync(distDir)).toBe(true)
+      expect(existsSync(distDir)).toBe(true);
 
       // expect(spy).not.toHaveBeenCalled()
       // expect(spy).toHaveBeenCalledTimes(8)
@@ -1529,16 +1529,16 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
     },
     {
       timeout: 30000,
-    },
-  )
+    }
+  );
 
   it(
     'larger-than-original config',
     async ({ task, expect }) => {
-      const spy = vi.spyOn(mockLogger, 'info')
+      const spy = vi.spyOn(mockLogger, 'info');
 
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`))
-      const distDir = `${tempDir}/dist`
+      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+      const distDir = `${tempDir}/dist`;
 
       const options = {
         include: /images\/animated-transparent-2\.gif$/i,
@@ -1552,24 +1552,24 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
         },
         logger: mockLogger,
         cache: false,
-      }
+      };
 
       const testConfig = getBuildConfig(viteImagemin(options), {
         build: {
           outDir: normalizePath(relative(root, distDir)),
         },
-      })
+      });
 
-      await expect(build(testConfig)).resolves.toHaveProperty('output')
+      await expect(build(testConfig)).resolves.toHaveProperty('output');
 
-      expect(existsSync(distDir)).toBe(true)
+      expect(existsSync(distDir)).toBe(true);
 
-      expect(spy).toHaveBeenCalledTimes(8)
+      expect(spy).toHaveBeenCalledTimes(8);
       expect(spy.mock.results[3].value).toMatch(
         // /* eslint-disable-next-line no-control-regex */
         // /\u001b\[33manimated-transparent-2.gif/, // yellow
-        /animated-transparent-2.gif.+\+\d+(\.\d+)? %/, // yellow
-      )
+        /animated-transparent-2.gif.+\+\d+(\.\d+)? %/ // yellow
+      );
       // expect(spy.mock.results[3].value).toMatch(
       //   /* eslint-disable-next-line no-control-regex */
       //   /\u001b\[31m\+\d+(\.\d+)? %/, // red
@@ -1577,19 +1577,19 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
       expect(spy.mock.results[6].value).toMatch(
         // /* eslint-disable-next-line no-control-regex */
         // /\u001b\[31m\+\d+(\.\d+)? %/, // red
-        /\+\d+(\.\d+)? %/, // red
-      )
+        /\+\d+(\.\d+)? %/ // red
+      );
     },
     {
       timeout: 10000,
-    },
-  )
+    }
+  );
 
   it(
     'equal-sized config',
     async ({ task, expect }) => {
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`))
-      const distDir = `${tempDir}/dist`
+      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+      const distDir = `${tempDir}/dist`;
 
       const options = {
         include: /images\/animated-transparent-2\.gif$/i,
@@ -1598,28 +1598,28 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
           gif: [mockPlugin],
         },
         cache: false,
-      }
+      };
 
       const testConfig = getBuildConfig(viteImagemin(options), {
         build: {
           outDir: normalizePath(relative(root, distDir)),
         },
-      })
+      });
 
-      await expect(build(testConfig)).resolves.toHaveProperty('output')
+      await expect(build(testConfig)).resolves.toHaveProperty('output');
 
-      expect(existsSync(distDir)).toBe(true)
+      expect(existsSync(distDir)).toBe(true);
     },
     {
       timeout: 10000,
-    },
-  )
+    }
+  );
 
   it(
     'non-verbose-equal-sized config',
     async ({ task, expect }) => {
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`))
-      const distDir = `${tempDir}/dist`
+      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+      const distDir = `${tempDir}/dist`;
 
       const options = {
         verbose: false,
@@ -1629,28 +1629,28 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
           gif: [mockPlugin],
         },
         cache: false,
-      }
+      };
 
       const testConfig = getBuildConfig(viteImagemin(options), {
         build: {
           outDir: normalizePath(relative(root, distDir)),
         },
-      })
+      });
 
-      await expect(build(testConfig)).resolves.toHaveProperty('output')
+      await expect(build(testConfig)).resolves.toHaveProperty('output');
 
-      expect(existsSync(distDir)).toBe(true)
+      expect(existsSync(distDir)).toBe(true);
     },
     {
       timeout: 10000,
-    },
-  )
+    }
+  );
 
   it(
     'no-files config',
     async ({ task, expect }) => {
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`))
-      const distDir = `${tempDir}/dist`
+      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+      const distDir = `${tempDir}/dist`;
 
       const options = {
         onlyAssets: true,
@@ -1665,28 +1665,28 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
           ],
         },
         cache: false,
-      }
+      };
 
       const testConfig = getBuildConfig(viteImagemin(options), {
         build: {
           outDir: normalizePath(relative(root, distDir)),
         },
-      })
+      });
 
-      await expect(build(testConfig)).resolves.toHaveProperty('output')
+      await expect(build(testConfig)).resolves.toHaveProperty('output');
 
-      expect(existsSync(distDir)).toBe(true)
+      expect(existsSync(distDir)).toBe(true);
     },
     {
       timeout: 10000,
-    },
-  )
+    }
+  );
 
   it(
     'no-plugins-for-files config',
     async ({ task, expect }) => {
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`))
-      const distDir = `${tempDir}/dist`
+      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+      const distDir = `${tempDir}/dist`;
 
       const options = {
         onlyAssets: true,
@@ -1696,31 +1696,31 @@ describe.skipIf(skipBuilds)('viteImagemin', () => {
           none: [mockPlugin],
         },
         cache: false,
-      }
+      };
 
       const testConfig = getBuildConfig(viteImagemin(options), {
         build: {
           outDir: normalizePath(relative(root, distDir)),
         },
-      })
+      });
 
-      await expect(build(testConfig)).resolves.toHaveProperty('output')
+      await expect(build(testConfig)).resolves.toHaveProperty('output');
 
-      expect(existsSync(distDir)).toBe(true)
+      expect(existsSync(distDir)).toBe(true);
     },
     {
       timeout: 10000,
-    },
-  )
+    }
+  );
 
   it('invalid plugins throws error on init', async ({ expect }) => {
     expect(() =>
       viteImagemin({
         // @ts-expect-error testing wrong argument type
         plugins: false,
-      }),
-    ).toThrowError('Missing valid `plugins` option')
-  })
+      })
+    ).toThrowError('Missing valid `plugins` option');
+  });
 
   // TODO: other configs?
-})
+});

@@ -1,9 +1,9 @@
-import { describe, expect, it, beforeEach } from 'vitest'
-import { existsSync, rmSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { describe, expect, it, beforeEach } from 'vitest';
+import { existsSync, rmSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 
-import { normalizePath } from 'vite'
-import * as utils from './utils'
+import { normalizePath } from 'vite';
+import * as utils from './utils';
 
 const testVars = {
   v_undefined: undefined,
@@ -24,103 +24,103 @@ const testVars = {
   obj_object: {},
   obj_regex: /.*/,
   func_function: () => 1,
-}
+};
 type TestVars = {
-  [key in keyof typeof testVars]: any
-}
+  [key in keyof typeof testVars]: any;
+};
 const makeExpectedVars = (
   expect: Partial<TestVars>,
-  defaultValue: any = false,
+  defaultValue: any = false
 ): TestVars => {
   return Object.assign(
     {},
     Object.keys(testVars).reduce((o, k) => {
-      o[k] = defaultValue
-      return o
+      o[k] = defaultValue;
+      return o;
     }, {}) as TestVars,
-    expect,
-  )
-}
+    expect
+  );
+};
 
-const root = 'packages/playground'
+const root = 'packages/playground';
 
 describe('isFunction', () => {
   const expected = makeExpectedVars({
     func_function: true,
-  })
+  });
 
   Object.entries(testVars).forEach(([k, v]) => {
     it(`${k} returns ${expected[k]}`, () => {
-      expect(utils.isFunction(v)).toBe(expected[k])
-    })
-  })
-})
+      expect(utils.isFunction(v)).toBe(expected[k]);
+    });
+  });
+});
 
 describe('isBoolean', () => {
   const expected = makeExpectedVars({
     bool_false: true,
     bool_true: true,
-  })
+  });
 
   Object.entries(testVars).forEach(([k, v]) => {
     it(`${k} returns ${expected[k]}`, () => {
-      expect(utils.isBoolean(v)).toBe(expected[k])
-    })
-  })
-})
+      expect(utils.isBoolean(v)).toBe(expected[k]);
+    });
+  });
+});
 
 describe('isString', () => {
   const expected = makeExpectedVars({
     empty_string: true,
     non_empty_string: true,
-  })
+  });
 
   Object.entries(testVars).forEach(([k, v]) => {
     it(`${k} returns ${expected[k]}`, () => {
-      expect(utils.isString(v)).toBe(expected[k])
-    })
-  })
-})
+      expect(utils.isString(v)).toBe(expected[k]);
+    });
+  });
+});
 
 describe('isObject', () => {
   const expected = makeExpectedVars({
     obj_object: true,
     obj_regex: true,
-  })
+  });
 
   Object.entries(testVars).forEach(([k, v]) => {
     it(`${k} returns ${expected[k]}`, () => {
-      expect(utils.isObject(v)).toBe(expected[k])
-    })
-  })
-})
+      expect(utils.isObject(v)).toBe(expected[k]);
+    });
+  });
+});
 
 describe('isNotFalse', () => {
   const expected = makeExpectedVars(
     {
       bool_false: false,
     },
-    true,
-  )
+    true
+  );
 
   Object.entries(testVars).forEach(([k, v]) => {
     it(`${k} returns ${expected[k]}`, () => {
-      expect(utils.isNotFalse(v)).toBe(expected[k])
-    })
-  })
-})
+      expect(utils.isNotFalse(v)).toBe(expected[k]);
+    });
+  });
+});
 
 describe('isRegExp', () => {
   const expected = makeExpectedVars({
     obj_regex: true,
-  })
+  });
 
   Object.entries(testVars).forEach(([k, v]) => {
     it(`${k} returns ${expected[k]}`, () => {
-      expect(utils.isRegExp(v)).toBe(expected[k])
-    })
-  })
-})
+      expect(utils.isRegExp(v)).toBe(expected[k]);
+    });
+  });
+});
 
 describe('isFilterPattern', () => {
   const expected = makeExpectedVars({
@@ -131,44 +131,44 @@ describe('isFilterPattern', () => {
     str_array: true,
     regexp_array: true,
     str_regexp_array: true,
-  })
+  });
 
   Object.entries(testVars).forEach(([k, v]) => {
     it(`${k} returns ${expected[k]}`, () => {
-      expect(utils.isFilterPattern(v)).toBe(expected[k])
-    })
-  })
-})
+      expect(utils.isFilterPattern(v)).toBe(expected[k]);
+    });
+  });
+});
 
 describe('escapeRegExp', () => {
   it(`returns string with special chars escaped`, () => {
     expect(utils.escapeRegExp('abc123_!@%& ^.,+*?#|-()[]{}/\\$')).toBe(
-      'abc123_!@%& \\^\\.\\,\\+\\*\\?\\#\\|\\-\\(\\)\\[\\]\\{\\}\\/\\\\\\$',
-    )
-  })
-})
+      'abc123_!@%& \\^\\.\\,\\+\\*\\?\\#\\|\\-\\(\\)\\[\\]\\{\\}\\/\\\\\\$'
+    );
+  });
+});
 
 describe('smartEnsureDirs', () => {
-  let tempDir = ''
+  let tempDir = '';
 
-  beforeEach(ctx => {
+  beforeEach((ctx) => {
     // Ensure empty temp dir for test
     tempDir = normalizePath(
-      join(root, 'test', `temp${process.env.VITEST_POOL_ID}${ctx.task.id}`),
-    )
+      join(root, 'test', `temp${process.env.VITEST_POOL_ID}${ctx.task.id}`)
+    );
 
     if (existsSync(tempDir)) {
-      rmSync(tempDir, { recursive: true, force: true })
+      rmSync(tempDir, { recursive: true, force: true });
     }
-    mkdirSync(tempDir, { recursive: true, mode: 0o755 })
+    mkdirSync(tempDir, { recursive: true, mode: 0o755 });
 
     return () => {
       // Clean up temp dir
       if (existsSync(tempDir)) {
-        rmSync(tempDir, { recursive: true, force: true })
+        rmSync(tempDir, { recursive: true, force: true });
       }
-    }
-  })
+    };
+  });
 
   it('checks deepest unique paths only & creates all directories if absent', () => {
     const input = [
@@ -179,26 +179,26 @@ describe('smartEnsureDirs', () => {
       `${tempDir}/dirB/subdirA/subsubdirA/file1.txt`,
       `${tempDir}/dirC/file1.txt`,
       `${tempDir}/dirC/subdirA/file1.txt`,
-    ]
+    ];
 
     const expected = [
       `${tempDir}/dirB/subdirA/subsubdirB`,
       `${tempDir}/dirB/subdirA/subsubdirA`,
       `${tempDir}/dirC/subdirA`,
       `${tempDir}/dirA`,
-    ]
+    ];
 
     expected.forEach((dir, i) => {
-      expect([existsSync(dir), i]).toEqual([false, i])
-    })
+      expect([existsSync(dir), i]).toEqual([false, i]);
+    });
 
-    expect(utils.smartEnsureDirs(input)).toEqual(expected)
+    expect(utils.smartEnsureDirs(input)).toEqual(expected);
 
     expected.forEach((dir, i) => {
-      expect([existsSync(dir), i]).toEqual([true, i])
-    })
-  })
-})
+      expect([existsSync(dir), i]).toEqual([true, i]);
+    });
+  });
+});
 
 // TODO: add tests for getPackageDirectory and getPackageName
 // TODO: create `cache.test.ts` with tests for cache functions
