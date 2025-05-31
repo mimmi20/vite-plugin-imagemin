@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "jsx": "react",
     // "types": ["vitest/globals"],
     // added for VSCode typescript suggestions
     "module": "es2020",
