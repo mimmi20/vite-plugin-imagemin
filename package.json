@@ -23,8 +23,8 @@
   "scripts": {
     "dev": "npm run dev --workspace=packages/core",
     "build": "npm run build --workspace=packages/core",
-    "prettier": "prettier --config prettier.config.mjs --check packages/core/src/*.ts packages/core/src/**/*.ts eslint.config.mjs prettier.config.mjs vitest.config.ts vitestGlobalSetup.ts",
-    "prettier-fix": "prettier --config prettier.config.mjs --write packages/core/src/*.ts packages/core/src/**/*.ts eslint.config.mjs prettier.config.mjs vitest.config.ts vitestGlobalSetup.ts",
+    "prettier": "prettier --config prettier.config.mjs --check packages/core/src/*.ts packages/core/src/**/*.ts eslint.config.mjs prettier.config.mjs vitest.config.ts",
+    "prettier-fix": "prettier --config prettier.config.mjs --write packages/core/src/*.ts packages/core/src/**/*.ts eslint.config.mjs prettier.config.mjs vitest.config.ts",
     "eslint": "eslint . --config eslint.config.mjs",
     "eslint-fix": "eslint . --config eslint.config.mjs --fix",
     "build:test": "run-s build test",
