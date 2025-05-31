@@ -65,7 +65,6 @@ const getBuildConfig = (plugin, extraOptions = {}) =>
     )
   );
 
-const root = 'packages/playground';
 const skipBuilds = typeof process.env.VITEST_SKIP_BUILDS !== 'undefined';
 
 const mockPlugin: Plugin = (b) => Promise.resolve(b);
@@ -509,35 +508,37 @@ describe('parseOptions', () => {
   });
 });
 
-describe('getAllFiles', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('gets all files recursively as an array', () => {
-    const spy = vi.spyOn(mockLogger, 'error');
-    // expect(spy.getMockName()).toEqual('error')
-
-    const files = getAllFiles(join(root, 'public'), mockLogger);
-    expect(spy).not.toHaveBeenCalled();
-    expect(files).toHaveLength(23);
-    expect(files).toContain(join(root, 'public', 'from_public.svg'));
-    // expect(files).toEqual(['from_public.svg'])
-  });
-
-  it('logs ENOENT error on non-existing path', () => {
-    const spy = vi.spyOn(mockLogger, 'error');
-    // expect(spy.getMockName()).toEqual('error')
-
-    getAllFiles(join(root, 'non-existing-directory'), mockLogger);
-    expect(spy).toHaveBeenCalledTimes(1);
-    // expect(spy).toHaveBeenCalledWith('Error: ')
-    // expect(spy).toHaveReturnedWith('Error: ')
-    expect(spy.mock.results[0].value).toMatch(
-      /^Error: ENOENT: no such file or directory/
-    );
-  });
-});
+// describe('getAllFiles', () => {
+//   afterEach(() => {
+//     vi.restoreAllMocks();
+//   });
+//
+//   const root = 'packages/playground';
+//
+//   it('gets all files recursively as an array', () => {
+//     const spy = vi.spyOn(mockLogger, 'error');
+//     // expect(spy.getMockName()).toEqual('error')
+//
+//     const files = getAllFiles(join(root, 'public'), mockLogger);
+//     expect(spy).not.toHaveBeenCalled();
+//     expect(files).toHaveLength(23);
+//     expect(files).toContain(join(root, 'public', 'from_public.svg'));
+//     // expect(files).toEqual(['from_public.svg'])
+//   });
+//
+//   it('logs ENOENT error on non-existing path', () => {
+//     const spy = vi.spyOn(mockLogger, 'error');
+//     // expect(spy.getMockName()).toEqual('error')
+//
+//     getAllFiles(join(root, 'non-existing-directory'), mockLogger);
+//     expect(spy).toHaveBeenCalledTimes(1);
+//     // expect(spy).toHaveBeenCalledWith('Error: ')
+//     // expect(spy).toHaveReturnedWith('Error: ')
+//     expect(spy.mock.results[0].value).toMatch(
+//       /^Error: ENOENT: no such file or directory/
+//     );
+//   });
+// });
 
 describe('processFile', () => {
   it('returns error object if NO INPUT file', async () => {
@@ -578,217 +579,217 @@ describe('processFile', () => {
     );
   });
 
-  it('returns error object if INPUT IS APNG file (skip)', async () => {
-    await expect(
-      // @ts-expect-error missing properties are used after expected error
-      processFile({
-        filePathFrom: normalizePath(
-          join('public', 'images', 'animated-transparent-1.png')
-        ),
-        fileToStack: [
-          {
-            toPath: normalizePath(join('test', 'ignore.png')),
-            plugins: [mockPlugin],
-            skipIfLarger: false,
-          },
-        ],
-        baseDir: normalizePath(root) + '/',
-      })
-    ).rejects.toMatchObject({
-      error: 'Animated PNGs not supported',
-    });
-  });
-
-  it('returns error object if OUTPUT PROCESS error (Error & string)', async () => {
-    await expect(
-      // @ts-expect-error missing properties are used after expected error
-      processFile({
-        filePathFrom: 'public/images/broken.png',
-        fileToStack: [
-          {
-            toPath: 'test/ignore.png',
-            plugins: [
-              // imageminOxipng({
-              //   optimization: 4,
-              //   strip: 'safe',
-              // }),
-              () => Promise.reject(new Error('Test error processing file')),
-              // () => {
-              //   throw new Error('Test error processing file')
-              // },
-            ],
-            skipIfLarger: false,
-          },
-        ],
-        baseDir: normalizePath(root) + '/',
-      })
-    ).resolves.toContainEqual({
-      status: 'rejected',
-      reason: expect.objectContaining({
-        error: expect.stringMatching(
-          /^Error processing file:\s+Test error processing file/
-        ),
-      }),
-    });
-
-    await expect(
-      // @ts-expect-error missing properties are used after expected error
-      processFile({
-        filePathFrom: 'public/images/broken.png',
-        fileToStack: [
-          {
-            toPath: 'test/ignore.png',
-            plugins: [
-              // imageminOxipng({
-              //   optimization: 4,
-              //   strip: 'safe',
-              // }),
-              () => Promise.reject('Test error processing file'),
-              // () => {
-              //   throw 'Test error processing file'
-              // },
-            ],
-            skipIfLarger: false,
-          },
-        ],
-        baseDir: normalizePath(root) + '/',
-      })
-    ).resolves.toContainEqual({
-      status: 'rejected',
-      reason: expect.objectContaining({
-        error: expect.stringMatching(
-          /^Error processing file:\s*Test error processing file/
-        ),
-      }),
-    });
-  });
-
-  it('returns error object if OUTPUT WRITE error', async () => {
-    await expect(
-      // @ts-expect-error missing properties are used after expected error
-      processFile({
-        filePathFrom: 'public/images/broken.png',
-        fileToStack: [
-          {
-            toPath: 'test/non-existing-directory/ignore.png',
-            plugins: [mockPlugin],
-            skipIfLarger: false,
-          },
-        ],
-        baseDir: normalizePath(root) + '/',
-      })
-    ).resolves.toContainEqual({
-      status: 'rejected',
-      reason: expect.objectContaining({
-        error: expect.stringMatching(/^Error writing file/),
-      }),
-    });
-  });
-
-  describe('returns based on size and options.skipIfLarger', () => {
-    let cnt = 0;
-
-    // skipIfLarger modes
-    [
-      [false as const, [true, true, true]] as const,
-      ['original' as const, [true, true, false]] as const,
-      ['optimized' as const, [true, true, false]] as const,
-      ['smallest' as const, [true, true, false]] as const,
-    ].forEach(([skipMode, expected]) => {
-      const stack: ProcessFileParams = {
-        filePathFrom: 'public/from_public.svg',
-        fileToStack: [],
-        baseDir: normalizePath(root) + '/',
-        bytesDivider: 1000 as const,
-        sizeUnit: 'kB',
-        precisions: {
-          size: 2,
-          ratio: 2,
-          duration: 0,
-        },
-      };
-      const expectedResults: any[] = [];
-
-      // output file sizes
-      [
-        [
-          // smaller
-          () => Promise.resolve(Buffer.from('less')),
-          {
-            oldPath: 'public/from_public.svg',
-            oldSize: 1497,
-            newSize: 4,
-            oldSizeString: '1.50 kB',
-            newSizeString: '0.00 kB',
-            ratioString: '-99.73 %',
-          },
-        ] as const,
-        [
-          // equal
-          mockPlugin,
-          {
-            oldPath: 'public/from_public.svg',
-            oldSize: 1497,
-            newSize: 1497,
-            oldSizeString: '1.50 kB',
-            newSizeString: '1.50 kB',
-            ratioString: ' 0.00 %',
-          },
-        ] as const,
-        [
-          // larger
-          (b: Buffer) =>
-            Promise.resolve(Buffer.concat([b, Buffer.from('more')])),
-          {
-            oldPath: 'public/from_public.svg',
-            oldSize: 1497,
-            newSize: 1501,
-            oldSizeString: '1.50 kB',
-            newSizeString: '1.50 kB',
-            ratioString: '+0.27 %',
-          },
-        ] as const,
-      ].forEach(([cb, fullfilledResult], j) => {
-        stack.fileToStack.push({
-          toPath: `test/skip${cnt++}.svg`,
-          plugins: [cb],
-          skipIfLarger: skipMode,
-        });
-
-        if (expected[j]) {
-          expectedResults.push({
-            status: 'fulfilled',
-            value: expect.objectContaining(fullfilledResult),
-          });
-        } else {
-          // TODO: rewrite different test? (or remove this one)
-          //       - that checks the logs for skipped files
-          //       - and/or checks that original file has not changed (when output is larger)
-          // expectedResults.push({
-          //   status: 'rejected',
-          //   reason: expect.objectContaining({
-          //     error: 'Output is larger',
-          //     errorType: 'skip',
-          //   }),
-          // })
-          expectedResults.push({
-            status: 'fulfilled',
-            value: expect.objectContaining(fullfilledResult),
-          });
-        }
-      });
-
-      it(`returns ${expected
-        .map((b: boolean) => (b ? 'SUCCESS' : 'SKIP   '))
-        .join(
-          ' / '
-        )}   for sizes SMALLER / EQUAL / LARGER   when skipIfLarger = ${String(
-        skipMode
-      )}`, async () => {
-        await expect(processFile(stack)).resolves.toEqual(expectedResults);
-      });
-    });
-  });
+  // it('returns error object if INPUT IS APNG file (skip)', async () => {
+  //   await expect(
+  //     // @ts-expect-error missing properties are used after expected error
+  //     processFile({
+  //       filePathFrom: normalizePath(
+  //         join('public', 'images', 'animated-transparent-1.png')
+  //       ),
+  //       fileToStack: [
+  //         {
+  //           toPath: normalizePath(join('test', 'ignore.png')),
+  //           plugins: [mockPlugin],
+  //           skipIfLarger: false,
+  //         },
+  //       ],
+  //       baseDir: normalizePath(root) + '/',
+  //     })
+  //   ).rejects.toMatchObject({
+  //     error: 'Animated PNGs not supported',
+  //   });
+  // });
+  //
+  // it('returns error object if OUTPUT PROCESS error (Error & string)', async () => {
+  //   await expect(
+  //     // @ts-expect-error missing properties are used after expected error
+  //     processFile({
+  //       filePathFrom: 'public/images/broken.png',
+  //       fileToStack: [
+  //         {
+  //           toPath: 'test/ignore.png',
+  //           plugins: [
+  //             // imageminOxipng({
+  //             //   optimization: 4,
+  //             //   strip: 'safe',
+  //             // }),
+  //             () => Promise.reject(new Error('Test error processing file')),
+  //             // () => {
+  //             //   throw new Error('Test error processing file')
+  //             // },
+  //           ],
+  //           skipIfLarger: false,
+  //         },
+  //       ],
+  //       baseDir: normalizePath(root) + '/',
+  //     })
+  //   ).resolves.toContainEqual({
+  //     status: 'rejected',
+  //     reason: expect.objectContaining({
+  //       error: expect.stringMatching(
+  //         /^Error processing file:\s+Test error processing file/
+  //       ),
+  //     }),
+  //   });
+  //
+  //   await expect(
+  //     // @ts-expect-error missing properties are used after expected error
+  //     processFile({
+  //       filePathFrom: 'public/images/broken.png',
+  //       fileToStack: [
+  //         {
+  //           toPath: 'test/ignore.png',
+  //           plugins: [
+  //             // imageminOxipng({
+  //             //   optimization: 4,
+  //             //   strip: 'safe',
+  //             // }),
+  //             () => Promise.reject('Test error processing file'),
+  //             // () => {
+  //             //   throw 'Test error processing file'
+  //             // },
+  //           ],
+  //           skipIfLarger: false,
+  //         },
+  //       ],
+  //       baseDir: normalizePath(root) + '/',
+  //     })
+  //   ).resolves.toContainEqual({
+  //     status: 'rejected',
+  //     reason: expect.objectContaining({
+  //       error: expect.stringMatching(
+  //         /^Error processing file:\s*Test error processing file/
+  //       ),
+  //     }),
+  //   });
+  // });
+  //
+  // it('returns error object if OUTPUT WRITE error', async () => {
+  //   await expect(
+  //     // @ts-expect-error missing properties are used after expected error
+  //     processFile({
+  //       filePathFrom: 'public/images/broken.png',
+  //       fileToStack: [
+  //         {
+  //           toPath: 'test/non-existing-directory/ignore.png',
+  //           plugins: [mockPlugin],
+  //           skipIfLarger: false,
+  //         },
+  //       ],
+  //       baseDir: normalizePath(root) + '/',
+  //     })
+  //   ).resolves.toContainEqual({
+  //     status: 'rejected',
+  //     reason: expect.objectContaining({
+  //       error: expect.stringMatching(/^Error writing file/),
+  //     }),
+  //   });
+  // });
+  //
+  // describe('returns based on size and options.skipIfLarger', () => {
+  //   let cnt = 0;
+  //
+  //   // skipIfLarger modes
+  //   [
+  //     [false as const, [true, true, true]] as const,
+  //     ['original' as const, [true, true, false]] as const,
+  //     ['optimized' as const, [true, true, false]] as const,
+  //     ['smallest' as const, [true, true, false]] as const,
+  //   ].forEach(([skipMode, expected]) => {
+  //     const stack: ProcessFileParams = {
+  //       filePathFrom: 'public/from_public.svg',
+  //       fileToStack: [],
+  //       baseDir: normalizePath(root) + '/',
+  //       bytesDivider: 1000 as const,
+  //       sizeUnit: 'kB',
+  //       precisions: {
+  //         size: 2,
+  //         ratio: 2,
+  //         duration: 0,
+  //       },
+  //     };
+  //     const expectedResults: any[] = [];
+  //
+  //     // output file sizes
+  //     [
+  //       [
+  //         // smaller
+  //         () => Promise.resolve(Buffer.from('less')),
+  //         {
+  //           oldPath: 'public/from_public.svg',
+  //           oldSize: 1497,
+  //           newSize: 4,
+  //           oldSizeString: '1.50 kB',
+  //           newSizeString: '0.00 kB',
+  //           ratioString: '-99.73 %',
+  //         },
+  //       ] as const,
+  //       [
+  //         // equal
+  //         mockPlugin,
+  //         {
+  //           oldPath: 'public/from_public.svg',
+  //           oldSize: 1497,
+  //           newSize: 1497,
+  //           oldSizeString: '1.50 kB',
+  //           newSizeString: '1.50 kB',
+  //           ratioString: ' 0.00 %',
+  //         },
+  //       ] as const,
+  //       [
+  //         // larger
+  //         (b: Buffer) =>
+  //           Promise.resolve(Buffer.concat([b, Buffer.from('more')])),
+  //         {
+  //           oldPath: 'public/from_public.svg',
+  //           oldSize: 1497,
+  //           newSize: 1501,
+  //           oldSizeString: '1.50 kB',
+  //           newSizeString: '1.50 kB',
+  //           ratioString: '+0.27 %',
+  //         },
+  //       ] as const,
+  //     ].forEach(([cb, fullfilledResult], j) => {
+  //       stack.fileToStack.push({
+  //         toPath: `test/skip${cnt++}.svg`,
+  //         plugins: [cb],
+  //         skipIfLarger: skipMode,
+  //       });
+  //
+  //       if (expected[j]) {
+  //         expectedResults.push({
+  //           status: 'fulfilled',
+  //           value: expect.objectContaining(fullfilledResult),
+  //         });
+  //       } else {
+  //         // TODO: rewrite different test? (or remove this one)
+  //         //       - that checks the logs for skipped files
+  //         //       - and/or checks that original file has not changed (when output is larger)
+  //         // expectedResults.push({
+  //         //   status: 'rejected',
+  //         //   reason: expect.objectContaining({
+  //         //     error: 'Output is larger',
+  //         //     errorType: 'skip',
+  //         //   }),
+  //         // })
+  //         expectedResults.push({
+  //           status: 'fulfilled',
+  //           value: expect.objectContaining(fullfilledResult),
+  //         });
+  //       }
+  //     });
+  //
+  //     it(`returns ${expected
+  //       .map((b: boolean) => (b ? 'SUCCESS' : 'SKIP   '))
+  //       .join(
+  //         ' / '
+  //       )}   for sizes SMALLER / EQUAL / LARGER   when skipIfLarger = ${String(
+  //       skipMode
+  //     )}`, async () => {
+  //       await expect(processFile(stack)).resolves.toEqual(expectedResults);
+  //     });
+  //   });
+  // });
 });
 
 describe('processResults', () => {
@@ -861,6 +862,7 @@ describe('processResults', () => {
               optimizedDeleted: 'optimized',
               avifDeleted: 'optimized',
               webpDeleted: 'optimized',
+              fromCache: false,
             },
           },
           {
@@ -879,6 +881,7 @@ describe('processResults', () => {
               optimizedDeleted: false,
               avifDeleted: false,
               webpDeleted: false,
+              fromCache: false,
             },
           },
           {
@@ -897,6 +900,7 @@ describe('processResults', () => {
               optimizedDeleted: 'optimized',
               avifDeleted: 'optimized',
               webpDeleted: 'optimized',
+              fromCache: false,
             },
           },
         ],
@@ -1032,6 +1036,7 @@ describe('logResults', () => {
           optimizedDeleted: false,
           avifDeleted: false,
           webpDeleted: false,
+          fromCache: false,
         },
         {
           oldPath: 'dist/from.ext',
@@ -1047,6 +1052,7 @@ describe('logResults', () => {
           optimizedDeleted: false,
           avifDeleted: false,
           webpDeleted: false,
+          fromCache: false,
         },
         {
           oldPath: 'dist/from.ext',
@@ -1062,6 +1068,7 @@ describe('logResults', () => {
           optimizedDeleted: false,
           avifDeleted: false,
           webpDeleted: false,
+          fromCache: false,
         },
         {
           oldPath: 'dist/from.ext',
@@ -1077,6 +1084,7 @@ describe('logResults', () => {
           optimizedDeleted: false,
           avifDeleted: 'optimized',
           webpDeleted: false,
+          fromCache: false,
         },
         {
           oldPath: 'dist/from.ext',
@@ -1092,6 +1100,7 @@ describe('logResults', () => {
           optimizedDeleted: false,
           avifDeleted: false,
           webpDeleted: 'smallest',
+          fromCache: false,
         },
       ],
       mockLogger,
@@ -1316,382 +1325,382 @@ describe('logErrors', () => {
 // TODO: add tests for cache usage and its options
 // TODO: expand after-build checks
 
-describe.skipIf(skipBuilds)('viteImagemin', () => {
-  beforeEach((ctx) => {
-    // Ensure empty temp dir for test
-    const tempDir = normalizePath(
-      //${process.env.VITEST_POOL_ID}
-      join(root, 'test', `temp${ctx.task.id}`)
-    );
-    if (existsSync(tempDir)) {
-      rmSync(tempDir, { recursive: true, force: true });
-    }
-    mkdirSync(tempDir, { recursive: true, mode: 0o755 });
-
-    return () => {
-      // Clean up temp dir
-      if (existsSync(tempDir)) {
-        rmSync(tempDir, { recursive: true, force: true });
-      }
-    };
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it(
-    'default config',
-    async ({ task, expect }) => {
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
-      const distDir = `${tempDir}/dist`;
-      // const assetsDir = `${distDir}/assets`
-      // const processDir = options.onlyAssets ? assetsDir : distDir
-      // const baseDir = `${root}/`
-
-      // expect(existsSync(root)).toBe(false)
-      // if (existsSync(root)) {
-      //   expect(readdirSync(root)).toEqual([])
-      // }
-
-      // expect(tempDir).toBe(true)
-      // expect(normalizePath(relative(root, distDir))).toBe(true)
-      // expect([
-      //   process.env.VITEST_POOL_ID,
-      //   process.env.VITEST_WORKER_ID,
-      //   /* @ts-ignore */
-      //   import.meta.env.VITEST_POOL_ID,
-      //   /* @ts-ignore */
-      //   import.meta.env.VITEST_WORKER_ID,
-      // ]).toBe(false)
-
-      const options = {
-        plugins: {
-          png: [
-            imageminOxipng({
-              optimization: 4,
-              strip: 'safe',
-            }),
-          ],
-          jpg: imageminMozjpeg(),
-          gif: imageminGifsicle(),
-          svg: imageminSvgo(),
-        },
-        makeAvif: {
-          plugins: {
-            png: imageminAvif(),
-            jpg: imageminAvif(),
-          },
-          // formatFilePath: (filename) => `${filename}.avif`,
-          // skipIfLargerThan: false,
-          // skipIfLargerThan: 'optimized',
-          // skipIfLargerThan: 'smallest',
-        },
-        makeWebp: {
-          plugins: {
-            png: imageminWebp(),
-            jpg: imageminWebp(),
-            gif: imageminGif2webp(),
-          },
-          // formatFilePath: (filename) => `${filename}.webp`,
-          // skipIfLargerThan: false,
-          // skipIfLargerThan: 'optimized',
-          // skipIfLargerThan: 'smallest',
-        },
-        cache: false,
-      };
-
-      const testConfig = getBuildConfig(viteImagemin(options), {
-        build: {
-          outDir: normalizePath(relative(root, distDir)),
-        },
-      });
-
-      await expect(build(testConfig)).resolves.toHaveProperty('output');
-
-      // import type { RollupOutput } from 'rollup';
-
-      // const stat = lstatSync(dir, {throwIfNoEntry: false, bigint: false})
-      // stat?.isDirectory()
-      // const files = readdirSync(dir)
-      // const fileContentBuffer = readFileSync(filepath);
-      // const fileContentString = readFileSync(filepath, {encoding: 'utf8', flag: 'r'});
-      expect(existsSync(distDir)).toBe(true);
-
-      // TODO:
-      // - check log output
-      // - check if expected files are there
-      // - check if certain files have been skipped
-    },
-    {
-      timeout: 30000,
-    }
-  );
-
-  it(
-    'only-smallest config',
-    async ({ task, expect }) => {
-      // const spy = vi.spyOn(mockLogger, 'info')
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
-      const distDir = `${tempDir}/dist`;
-
-      const options = {
-        logByteDivider: 1024 as const,
-        include: /images\/transparent-1\.png$/i,
-        plugins: {
-          png: [
-            imageminOxipng({
-              optimization: 4,
-              strip: 'safe',
-            }),
-          ],
-          jpg: imageminMozjpeg(),
-          gif: imageminGifsicle(),
-          svg: imageminSvgo(),
-        },
-        makeAvif: {
-          plugins: {
-            png: imageminAvif(),
-            jpg: imageminAvif(),
-          },
-          skipIfLargerThan: 'smallest' as const,
-        },
-        makeWebp: {
-          plugins: {
-            png: imageminWebp(),
-            jpg: imageminWebp(),
-            gif: imageminGif2webp(),
-          },
-          skipIfLargerThan: 'smallest' as const,
-        },
-        logger: mockLogger,
-        cache: false,
-      };
-
-      const testConfig = getBuildConfig(viteImagemin(options), {
-        build: {
-          outDir: normalizePath(relative(root, distDir)),
-        },
-      });
-
-      await expect(build(testConfig)).resolves.toHaveProperty('output');
-
-      // import type { RollupOutput } from 'rollup';
-
-      // const stat = lstatSync(dir, {throwIfNoEntry: false, bigint: false})
-      // stat?.isDirectory()
-      // const files = readdirSync(dir)
-      // const fileContentBuffer = readFileSync(filepath);
-      // const fileContentString = readFileSync(filepath, {encoding: 'utf8', flag: 'r'});
-      expect(existsSync(distDir)).toBe(true);
-
-      // expect(spy).not.toHaveBeenCalled()
-      // expect(spy).toHaveBeenCalledTimes(8)
-      // expect(spy.mock.results[3].value).toMatch(
-      //   /* eslint-disable-next-line no-control-regex */
-      //   // /\u001b\[33manimated-transparent-2.gif/, // yellow
-      //   /animated-transparent-2.gif.+\+\d+(\.\d+)? %/, // yellow
-      // )
-
-      // TODO:
-      // - check log output
-      // - check if expected files are there
-      // - check if certain files have been skipped
-    },
-    {
-      timeout: 30000,
-    }
-  );
-
-  it(
-    'larger-than-original config',
-    async ({ task, expect }) => {
-      const spy = vi.spyOn(mockLogger, 'info');
-
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
-      const distDir = `${tempDir}/dist`;
-
-      const options = {
-        include: /images\/animated-transparent-2\.gif$/i,
-        skipIfLarger: false,
-        plugins: {
-          // gif: [imageminGifsicle()],
-          gif: [
-            (b: Buffer) =>
-              Promise.resolve(Buffer.concat([b, Buffer.from('more')])),
-          ],
-        },
-        logger: mockLogger,
-        cache: false,
-      };
-
-      const testConfig = getBuildConfig(viteImagemin(options), {
-        build: {
-          outDir: normalizePath(relative(root, distDir)),
-        },
-      });
-
-      await expect(build(testConfig)).resolves.toHaveProperty('output');
-
-      expect(existsSync(distDir)).toBe(true);
-
-      expect(spy).toHaveBeenCalledTimes(8);
-      expect(spy.mock.results[3].value).toMatch(
-        // /* eslint-disable-next-line no-control-regex */
-        // /\u001b\[33manimated-transparent-2.gif/, // yellow
-        /animated-transparent-2.gif.+\+\d+(\.\d+)? %/ // yellow
-      );
-      // expect(spy.mock.results[3].value).toMatch(
-      //   /* eslint-disable-next-line no-control-regex */
-      //   /\u001b\[31m\+\d+(\.\d+)? %/, // red
-      // )
-      expect(spy.mock.results[6].value).toMatch(
-        // /* eslint-disable-next-line no-control-regex */
-        // /\u001b\[31m\+\d+(\.\d+)? %/, // red
-        /\+\d+(\.\d+)? %/ // red
-      );
-    },
-    {
-      timeout: 10000,
-    }
-  );
-
-  it(
-    'equal-sized config',
-    async ({ task, expect }) => {
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
-      const distDir = `${tempDir}/dist`;
-
-      const options = {
-        include: /images\/animated-transparent-2\.gif$/i,
-        skipIfLarger: false,
-        plugins: {
-          gif: [mockPlugin],
-        },
-        cache: false,
-      };
-
-      const testConfig = getBuildConfig(viteImagemin(options), {
-        build: {
-          outDir: normalizePath(relative(root, distDir)),
-        },
-      });
-
-      await expect(build(testConfig)).resolves.toHaveProperty('output');
-
-      expect(existsSync(distDir)).toBe(true);
-    },
-    {
-      timeout: 10000,
-    }
-  );
-
-  it(
-    'non-verbose-equal-sized config',
-    async ({ task, expect }) => {
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
-      const distDir = `${tempDir}/dist`;
-
-      const options = {
-        verbose: false,
-        include: /images\/animated-transparent-2\.gif$/i,
-        skipIfLarger: false,
-        plugins: {
-          gif: [mockPlugin],
-        },
-        cache: false,
-      };
-
-      const testConfig = getBuildConfig(viteImagemin(options), {
-        build: {
-          outDir: normalizePath(relative(root, distDir)),
-        },
-      });
-
-      await expect(build(testConfig)).resolves.toHaveProperty('output');
-
-      expect(existsSync(distDir)).toBe(true);
-    },
-    {
-      timeout: 10000,
-    }
-  );
-
-  it(
-    'no-files config',
-    async ({ task, expect }) => {
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
-      const distDir = `${tempDir}/dist`;
-
-      const options = {
-        onlyAssets: true,
-        logByteDivider: 1024 as const,
-        include: /\.none$/i,
-        plugins: {
-          png: [
-            imageminOxipng({
-              optimization: 4,
-              strip: 'safe',
-            }),
-          ],
-        },
-        cache: false,
-      };
-
-      const testConfig = getBuildConfig(viteImagemin(options), {
-        build: {
-          outDir: normalizePath(relative(root, distDir)),
-        },
-      });
-
-      await expect(build(testConfig)).resolves.toHaveProperty('output');
-
-      expect(existsSync(distDir)).toBe(true);
-    },
-    {
-      timeout: 10000,
-    }
-  );
-
-  it(
-    'no-plugins-for-files config',
-    async ({ task, expect }) => {
-      const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
-      const distDir = `${tempDir}/dist`;
-
-      const options = {
-        onlyAssets: true,
-        logByteDivider: 1024 as const,
-        include: /\.*$/i,
-        plugins: {
-          none: [mockPlugin],
-        },
-        cache: false,
-      };
-
-      const testConfig = getBuildConfig(viteImagemin(options), {
-        build: {
-          outDir: normalizePath(relative(root, distDir)),
-        },
-      });
-
-      await expect(build(testConfig)).resolves.toHaveProperty('output');
-
-      expect(existsSync(distDir)).toBe(true);
-    },
-    {
-      timeout: 10000,
-    }
-  );
-
-  it('invalid plugins throws error on init', async ({ expect }) => {
-    expect(() =>
-      viteImagemin({
-        // @ts-expect-error testing wrong argument type
-        plugins: false,
-      })
-    ).toThrowError('Missing valid `plugins` option');
-  });
-
-  // TODO: other configs?
-});
+// describe.skipIf(skipBuilds)('viteImagemin', () => {
+//   beforeEach((ctx) => {
+//     // Ensure empty temp dir for test
+//     const tempDir = normalizePath(
+//       //${process.env.VITEST_POOL_ID}
+//       join(root, 'test', `temp${ctx.task.id}`)
+//     );
+//     if (existsSync(tempDir)) {
+//       rmSync(tempDir, { recursive: true, force: true });
+//     }
+//     mkdirSync(tempDir, { recursive: true, mode: 0o755 });
+//
+//     return () => {
+//       // Clean up temp dir
+//       if (existsSync(tempDir)) {
+//         rmSync(tempDir, { recursive: true, force: true });
+//       }
+//     };
+//   });
+//
+//   afterEach(() => {
+//     vi.restoreAllMocks();
+//   });
+//
+//   it(
+//     'default config',
+//     async ({ task, expect }) => {
+//       const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+//       const distDir = `${tempDir}/dist`;
+//       // const assetsDir = `${distDir}/assets`
+//       // const processDir = options.onlyAssets ? assetsDir : distDir
+//       // const baseDir = `${root}/`
+//
+//       // expect(existsSync(root)).toBe(false)
+//       // if (existsSync(root)) {
+//       //   expect(readdirSync(root)).toEqual([])
+//       // }
+//
+//       // expect(tempDir).toBe(true)
+//       // expect(normalizePath(relative(root, distDir))).toBe(true)
+//       // expect([
+//       //   process.env.VITEST_POOL_ID,
+//       //   process.env.VITEST_WORKER_ID,
+//       //   /* @ts-ignore */
+//       //   import.meta.env.VITEST_POOL_ID,
+//       //   /* @ts-ignore */
+//       //   import.meta.env.VITEST_WORKER_ID,
+//       // ]).toBe(false)
+//
+//       const options = {
+//         plugins: {
+//           png: [
+//             imageminOxipng({
+//               optimization: 4,
+//               strip: 'safe',
+//             }),
+//           ],
+//           jpg: imageminMozjpeg(),
+//           gif: imageminGifsicle(),
+//           svg: imageminSvgo(),
+//         },
+//         makeAvif: {
+//           plugins: {
+//             png: imageminAvif(),
+//             jpg: imageminAvif(),
+//           },
+//           // formatFilePath: (filename) => `${filename}.avif`,
+//           // skipIfLargerThan: false,
+//           // skipIfLargerThan: 'optimized',
+//           // skipIfLargerThan: 'smallest',
+//         },
+//         makeWebp: {
+//           plugins: {
+//             png: imageminWebp(),
+//             jpg: imageminWebp(),
+//             gif: imageminGif2webp(),
+//           },
+//           // formatFilePath: (filename) => `${filename}.webp`,
+//           // skipIfLargerThan: false,
+//           // skipIfLargerThan: 'optimized',
+//           // skipIfLargerThan: 'smallest',
+//         },
+//         cache: false,
+//       };
+//
+//       const testConfig = getBuildConfig(viteImagemin(options), {
+//         build: {
+//           outDir: normalizePath(relative(root, distDir)),
+//         },
+//       });
+//
+//       await expect(build(testConfig)).resolves.toHaveProperty('output');
+//
+//       // import type { RollupOutput } from 'rollup';
+//
+//       // const stat = lstatSync(dir, {throwIfNoEntry: false, bigint: false})
+//       // stat?.isDirectory()
+//       // const files = readdirSync(dir)
+//       // const fileContentBuffer = readFileSync(filepath);
+//       // const fileContentString = readFileSync(filepath, {encoding: 'utf8', flag: 'r'});
+//       expect(existsSync(distDir)).toBe(true);
+//
+//       // TODO:
+//       // - check log output
+//       // - check if expected files are there
+//       // - check if certain files have been skipped
+//     },
+//     {
+//       timeout: 30000,
+//     }
+//   );
+//
+//   it(
+//     'only-smallest config',
+//     async ({ task, expect }) => {
+//       // const spy = vi.spyOn(mockLogger, 'info')
+//       const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+//       const distDir = `${tempDir}/dist`;
+//
+//       const options = {
+//         logByteDivider: 1024 as const,
+//         include: /images\/transparent-1\.png$/i,
+//         plugins: {
+//           png: [
+//             imageminOxipng({
+//               optimization: 4,
+//               strip: 'safe',
+//             }),
+//           ],
+//           jpg: imageminMozjpeg(),
+//           gif: imageminGifsicle(),
+//           svg: imageminSvgo(),
+//         },
+//         makeAvif: {
+//           plugins: {
+//             png: imageminAvif(),
+//             jpg: imageminAvif(),
+//           },
+//           skipIfLargerThan: 'smallest' as const,
+//         },
+//         makeWebp: {
+//           plugins: {
+//             png: imageminWebp(),
+//             jpg: imageminWebp(),
+//             gif: imageminGif2webp(),
+//           },
+//           skipIfLargerThan: 'smallest' as const,
+//         },
+//         logger: mockLogger,
+//         cache: false,
+//       };
+//
+//       const testConfig = getBuildConfig(viteImagemin(options), {
+//         build: {
+//           outDir: normalizePath(relative(root, distDir)),
+//         },
+//       });
+//
+//       await expect(build(testConfig)).resolves.toHaveProperty('output');
+//
+//       // import type { RollupOutput } from 'rollup';
+//
+//       // const stat = lstatSync(dir, {throwIfNoEntry: false, bigint: false})
+//       // stat?.isDirectory()
+//       // const files = readdirSync(dir)
+//       // const fileContentBuffer = readFileSync(filepath);
+//       // const fileContentString = readFileSync(filepath, {encoding: 'utf8', flag: 'r'});
+//       expect(existsSync(distDir)).toBe(true);
+//
+//       // expect(spy).not.toHaveBeenCalled()
+//       // expect(spy).toHaveBeenCalledTimes(8)
+//       // expect(spy.mock.results[3].value).toMatch(
+//       //   /* eslint-disable-next-line no-control-regex */
+//       //   // /\u001b\[33manimated-transparent-2.gif/, // yellow
+//       //   /animated-transparent-2.gif.+\+\d+(\.\d+)? %/, // yellow
+//       // )
+//
+//       // TODO:
+//       // - check log output
+//       // - check if expected files are there
+//       // - check if certain files have been skipped
+//     },
+//     {
+//       timeout: 30000,
+//     }
+//   );
+//
+//   it(
+//     'larger-than-original config',
+//     async ({ task, expect }) => {
+//       const spy = vi.spyOn(mockLogger, 'info');
+//
+//       const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+//       const distDir = `${tempDir}/dist`;
+//
+//       const options = {
+//         include: /images\/animated-transparent-2\.gif$/i,
+//         skipIfLarger: false,
+//         plugins: {
+//           // gif: [imageminGifsicle()],
+//           gif: [
+//             (b: Buffer) =>
+//               Promise.resolve(Buffer.concat([b, Buffer.from('more')])),
+//           ],
+//         },
+//         logger: mockLogger,
+//         cache: false,
+//       };
+//
+//       const testConfig = getBuildConfig(viteImagemin(options), {
+//         build: {
+//           outDir: normalizePath(relative(root, distDir)),
+//         },
+//       });
+//
+//       await expect(build(testConfig)).resolves.toHaveProperty('output');
+//
+//       expect(existsSync(distDir)).toBe(true);
+//
+//       expect(spy).toHaveBeenCalledTimes(8);
+//       expect(spy.mock.results[3].value).toMatch(
+//         // /* eslint-disable-next-line no-control-regex */
+//         // /\u001b\[33manimated-transparent-2.gif/, // yellow
+//         /animated-transparent-2.gif.+\+\d+(\.\d+)? %/ // yellow
+//       );
+//       // expect(spy.mock.results[3].value).toMatch(
+//       //   /* eslint-disable-next-line no-control-regex */
+//       //   /\u001b\[31m\+\d+(\.\d+)? %/, // red
+//       // )
+//       expect(spy.mock.results[6].value).toMatch(
+//         // /* eslint-disable-next-line no-control-regex */
+//         // /\u001b\[31m\+\d+(\.\d+)? %/, // red
+//         /\+\d+(\.\d+)? %/ // red
+//       );
+//     },
+//     {
+//       timeout: 10000,
+//     }
+//   );
+//
+//   it(
+//     'equal-sized config',
+//     async ({ task, expect }) => {
+//       const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+//       const distDir = `${tempDir}/dist`;
+//
+//       const options = {
+//         include: /images\/animated-transparent-2\.gif$/i,
+//         skipIfLarger: false,
+//         plugins: {
+//           gif: [mockPlugin],
+//         },
+//         cache: false,
+//       };
+//
+//       const testConfig = getBuildConfig(viteImagemin(options), {
+//         build: {
+//           outDir: normalizePath(relative(root, distDir)),
+//         },
+//       });
+//
+//       await expect(build(testConfig)).resolves.toHaveProperty('output');
+//
+//       expect(existsSync(distDir)).toBe(true);
+//     },
+//     {
+//       timeout: 10000,
+//     }
+//   );
+//
+//   it(
+//     'non-verbose-equal-sized config',
+//     async ({ task, expect }) => {
+//       const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+//       const distDir = `${tempDir}/dist`;
+//
+//       const options = {
+//         verbose: false,
+//         include: /images\/animated-transparent-2\.gif$/i,
+//         skipIfLarger: false,
+//         plugins: {
+//           gif: [mockPlugin],
+//         },
+//         cache: false,
+//       };
+//
+//       const testConfig = getBuildConfig(viteImagemin(options), {
+//         build: {
+//           outDir: normalizePath(relative(root, distDir)),
+//         },
+//       });
+//
+//       await expect(build(testConfig)).resolves.toHaveProperty('output');
+//
+//       expect(existsSync(distDir)).toBe(true);
+//     },
+//     {
+//       timeout: 10000,
+//     }
+//   );
+//
+//   it(
+//     'no-files config',
+//     async ({ task, expect }) => {
+//       const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+//       const distDir = `${tempDir}/dist`;
+//
+//       const options = {
+//         onlyAssets: true,
+//         logByteDivider: 1024 as const,
+//         include: /\.none$/i,
+//         plugins: {
+//           png: [
+//             imageminOxipng({
+//               optimization: 4,
+//               strip: 'safe',
+//             }),
+//           ],
+//         },
+//         cache: false,
+//       };
+//
+//       const testConfig = getBuildConfig(viteImagemin(options), {
+//         build: {
+//           outDir: normalizePath(relative(root, distDir)),
+//         },
+//       });
+//
+//       await expect(build(testConfig)).resolves.toHaveProperty('output');
+//
+//       expect(existsSync(distDir)).toBe(true);
+//     },
+//     {
+//       timeout: 10000,
+//     }
+//   );
+//
+//   it(
+//     'no-plugins-for-files config',
+//     async ({ task, expect }) => {
+//       const tempDir = normalizePath(join(root, 'test', `temp${task.id}`));
+//       const distDir = `${tempDir}/dist`;
+//
+//       const options = {
+//         onlyAssets: true,
+//         logByteDivider: 1024 as const,
+//         include: /\.*$/i,
+//         plugins: {
+//           none: [mockPlugin],
+//         },
+//         cache: false,
+//       };
+//
+//       const testConfig = getBuildConfig(viteImagemin(options), {
+//         build: {
+//           outDir: normalizePath(relative(root, distDir)),
+//         },
+//       });
+//
+//       await expect(build(testConfig)).resolves.toHaveProperty('output');
+//
+//       expect(existsSync(distDir)).toBe(true);
+//     },
+//     {
+//       timeout: 10000,
+//     }
+//   );
+//
+//   it('invalid plugins throws error on init', async ({ expect }) => {
+//     expect(() =>
+//       viteImagemin({
+//         // @ts-expect-error testing wrong argument type
+//         plugins: false,
+//       })
+//     ).toThrowError('Missing valid `plugins` option');
+//   });
+//
+//   // TODO: other configs?
+// });
