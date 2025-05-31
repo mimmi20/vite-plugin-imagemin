@@ -28,7 +28,7 @@ updates:
 
     commit-message:
       include: "scope"
-      prefix: "npm"
+      prefix: "npm (base)"
 
     rebase-strategy: "auto"
 
@@ -55,7 +55,7 @@ updates:
 
     commit-message:
       include: "scope"
-      prefix: "npm"
+      prefix: "npm (core)"
 
     rebase-strategy: "auto"
 
