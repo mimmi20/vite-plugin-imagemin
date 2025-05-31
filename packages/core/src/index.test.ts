@@ -862,7 +862,6 @@ describe('processResults', () => {
               optimizedDeleted: 'optimized',
               avifDeleted: 'optimized',
               webpDeleted: 'optimized',
-              fromCache: false,
             },
           },
           {
@@ -881,7 +880,6 @@ describe('processResults', () => {
               optimizedDeleted: false,
               avifDeleted: false,
               webpDeleted: false,
-              fromCache: false,
             },
           },
           {
@@ -900,7 +898,6 @@ describe('processResults', () => {
               optimizedDeleted: 'optimized',
               avifDeleted: 'optimized',
               webpDeleted: 'optimized',
-              fromCache: false,
             },
           },
         ],
