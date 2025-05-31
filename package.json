@@ -3,7 +3,7 @@
   "version": "2.1.0",
   "private": true,
   "engines": {
-    "node": ">=18.0.0"
+    "node": "^20.19.0 || ^22.12.0 || >=23.1.0"
   },
   "type": "module",
   "homepage": "https://github.com/vheemstra/vite-plugin-imagemin#readme",
@@ -20,41 +20,23 @@
     "webp",
     "avif"
   ],
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
     "dev": "npm run dev --workspace=packages/core",
     "build": "npm run build --workspace=packages/core",
-    "prettier": "prettier --config prettier.config.mjs --check packages/core/src/*.ts packages/core/src/**/*.ts packages/playground/src/*.ts packages/playground/src/**/*.ts eslint.config.mjs prettier.config.mjs vitest.config.ts vitestGlobalSetup.ts",
-    "prettier-fix": "prettier --config prettier.config.mjs --write packages/core/src/*.ts packages/core/src/**/*.ts packages/playground/src/*.ts packages/playground/src/**/*.ts eslint.config.mjs prettier.config.mjs vitest.config.ts vitestGlobalSetup.ts",
+    "prettier": "prettier --config prettier.config.mjs --check packages/core/src/*.ts packages/core/src/**/*.ts eslint.config.mjs prettier.config.mjs vitest.config.ts",
+    "prettier-fix": "prettier --config prettier.config.mjs --write packages/core/src/*.ts packages/core/src/**/*.ts eslint.config.mjs prettier.config.mjs vitest.config.ts",
     "eslint": "eslint . --config eslint.config.mjs",
     "eslint-fix": "eslint . --config eslint.config.mjs --fix",
     "build:test": "run-s build test",
     "build:test:coverage": "run-s build coverage",
     "build:test:view": "run-s build coverage serve:coverage",
-    "build:all": "run-s build playground:build",
-    "quick:test": "cross-env VITEST_SKIP_BUILDS=1 vitest run --no-coverage",
     "test": "vitest run --no-coverage",
     "coverage": "vitest run",
     "serve:coverage": "serve --no-clipboard ./coverage/",
     "test:view": "run-s coverage serve:coverage",
     "test:dev": "vitest",
     "test:dev:ui": "vitest --ui",
-    "test:dev:no-coverage": "vitest --no-coverage",
-    "playground:dev": "npm run dev --workspace=packages/playground",
-    "playground:build": "npm run build --workspace=packages/playground",
-    "playground:inspect": "npm run serve:inspect --workspace=packages/playground",
-    "playground:build:inspect": "run-s playground:build playground:inspect",
-    "playground:preview": "npm run preview --workspace=packages/playground",
-    "playground:preview:nobuild": "npm run preview:nobuild --workspace=packages/playground",
-    "bump:patch": "npm version patch -m \"Patch version %s\"",
-    "bump:minor": "npm version minor -m \"Minor version %s\"",
-    "bump:major": "npm version major -m \"Major version %s\"",
-    "preversion": "run-s eslint build test && git add .",
-    "version": "cross-var npm version --no-git-tag-version $npm_package_version --workspace=packages/core && git add .",
-    "_version_new_": "expose-env npm version --no-git-tag-version %npm_package_version% --workspace=packages/core && git add .",
-    "postversion": "git push --follow-tags"
+    "test:dev:no-coverage": "vitest --no-coverage"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.29.0",
@@ -62,15 +44,14 @@
     "@vheemstra/imagemin-avifenc": "^2.1.0",
     "@vheemstra/imagemin-oxipng": "^1.0.0",
     "@vitest/coverage-istanbul": "^3.1.1",
-    "@vitest/coverage-v8": "^3.1.1",
-    "cross-env": "^7.0.3",
-    "cross-var": "^1.1.0",
     "eslint": "^9.24.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-vitest-globals": "^1.5.0",
     "expose-env": "^0.1.7",
+    "globals": "^16.0.0",
+    "imagemin": "^9.0.1",
     "imagemin-gif2webp": "^3.0.0",
     "imagemin-gifsicle": "^7.0.0",
     "imagemin-mozjpeg": "^10.0.0",
@@ -78,6 +59,7 @@
     "imagemin-pngquant": "^10.0.0",
     "imagemin-svgo": "^11.0.1",
     "imagemin-webp": "^8.0.0",
+    "is-apng": "^1.2.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.5.3",
     "prettier-eslint": "^16.3.0",
@@ -94,5 +76,8 @@
     "json5": "^1.0.2",
     "http-cache-semantics": "^4.1.1",
     "got": "^11.8.3"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

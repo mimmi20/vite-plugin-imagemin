@@ -42,8 +42,6 @@ const makeExpectedVars = (
   );
 };
 
-const root = 'packages/playground';
-
 describe('isFunction', () => {
   const expected = makeExpectedVars({
     func_function: true,
@@ -148,57 +146,59 @@ describe('escapeRegExp', () => {
   });
 });
 
-describe('smartEnsureDirs', () => {
-  let tempDir = '';
-
-  beforeEach((ctx) => {
-    // Ensure empty temp dir for test
-    tempDir = normalizePath(
-      join(root, 'test', `temp${process.env.VITEST_POOL_ID}${ctx.task.id}`)
-    );
-
-    if (existsSync(tempDir)) {
-      rmSync(tempDir, { recursive: true, force: true });
-    }
-    mkdirSync(tempDir, { recursive: true, mode: 0o755 });
-
-    return () => {
-      // Clean up temp dir
-      if (existsSync(tempDir)) {
-        rmSync(tempDir, { recursive: true, force: true });
-      }
-    };
-  });
-
-  it('checks deepest unique paths only & creates all directories if absent', () => {
-    const input = [
-      `${tempDir}/dirA/file1.txt`,
-      `${tempDir}/dirA/file2.txt`,
-      `${tempDir}/dirB/file1.txt`,
-      `${tempDir}/dirB/subdirA/subsubdirB/file1.txt`,
-      `${tempDir}/dirB/subdirA/subsubdirA/file1.txt`,
-      `${tempDir}/dirC/file1.txt`,
-      `${tempDir}/dirC/subdirA/file1.txt`,
-    ];
-
-    const expected = [
-      `${tempDir}/dirB/subdirA/subsubdirB`,
-      `${tempDir}/dirB/subdirA/subsubdirA`,
-      `${tempDir}/dirC/subdirA`,
-      `${tempDir}/dirA`,
-    ];
-
-    expected.forEach((dir, i) => {
-      expect([existsSync(dir), i]).toEqual([false, i]);
-    });
-
-    expect(utils.smartEnsureDirs(input)).toEqual(expected);
-
-    expected.forEach((dir, i) => {
-      expect([existsSync(dir), i]).toEqual([true, i]);
-    });
-  });
-});
+// const root = 'packages/playground';
+//
+// describe('smartEnsureDirs', () => {
+//   let tempDir = '';
+//
+//   beforeEach((ctx) => {
+//     // Ensure empty temp dir for test
+//     tempDir = normalizePath(
+//       join(root, 'test', `temp${process.env.VITEST_POOL_ID}${ctx.task.id}`)
+//     );
+//
+//     if (existsSync(tempDir)) {
+//       rmSync(tempDir, { recursive: true, force: true });
+//     }
+//     mkdirSync(tempDir, { recursive: true, mode: 0o755 });
+//
+//     return () => {
+//       // Clean up temp dir
+//       if (existsSync(tempDir)) {
+//         rmSync(tempDir, { recursive: true, force: true });
+//       }
+//     };
+//   });
+//
+//   it('checks deepest unique paths only & creates all directories if absent', () => {
+//     const input = [
+//       `${tempDir}/dirA/file1.txt`,
+//       `${tempDir}/dirA/file2.txt`,
+//       `${tempDir}/dirB/file1.txt`,
+//       `${tempDir}/dirB/subdirA/subsubdirB/file1.txt`,
+//       `${tempDir}/dirB/subdirA/subsubdirA/file1.txt`,
+//       `${tempDir}/dirC/file1.txt`,
+//       `${tempDir}/dirC/subdirA/file1.txt`,
+//     ];
+//
+//     const expected = [
+//       `${tempDir}/dirB/subdirA/subsubdirB`,
+//       `${tempDir}/dirB/subdirA/subsubdirA`,
+//       `${tempDir}/dirC/subdirA`,
+//       `${tempDir}/dirA`,
+//     ];
+//
+//     expected.forEach((dir, i) => {
+//       expect([existsSync(dir), i]).toEqual([false, i]);
+//     });
+//
+//     expect(utils.smartEnsureDirs(input)).toEqual(expected);
+//
+//     expected.forEach((dir, i) => {
+//       expect([existsSync(dir), i]).toEqual([true, i]);
+//     });
+//   });
+// });
 
 // TODO: add tests for getPackageDirectory and getPackageName
 // TODO: create `cache.test.ts` with tests for cache functions

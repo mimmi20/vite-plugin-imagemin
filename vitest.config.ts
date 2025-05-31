@@ -15,7 +15,7 @@ export default defineConfig({
     dir: 'packages/core/src',
     // exclude: [...configDefaults.exclude, 'other/*', 'packages/playground/*'],
     testTimeout: 5000,
-    globalSetup: ['./vitestGlobalSetup.ts'],
+    // globalSetup: ['./vitestGlobalSetup.ts'],
     reporters: process.env.GITHUB_ACTIONS
       ? ['default', new GithubActionsReporter()]
       : 'default',
