@@ -76,5 +76,8 @@
     "json5": "^1.0.2",
     "http-cache-semantics": "^4.1.1",
     "got": "^11.8.3"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }
