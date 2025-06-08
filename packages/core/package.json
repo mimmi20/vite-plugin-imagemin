@@ -70,7 +70,7 @@
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/imagemin": "^9.0.1",
-    "@types/node": "^22.14.0",
+    "@types/node": "^22.15.30",
     "cross-env": "^7.0.3",
     "tsup": "^8.4.0",
     "typescript": "^5.8.3"
