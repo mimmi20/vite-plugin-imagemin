@@ -126,7 +126,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
     steps:
       - name: Clean up artifacts
-        uses: geekyeggo/delete-artifact@v4
+        uses: geekyeggo/delete-artifact@v5
         with:
           name: |
             matrix-*
