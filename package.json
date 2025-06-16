@@ -44,7 +44,7 @@
     "@vheemstra/imagemin-avifenc": "^2.1.0",
     "@vheemstra/imagemin-oxipng": "^1.0.0",
     "@vitest/coverage-istanbul": "^3.2.3",
-    "eslint": "^9.24.0",
+    "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.2.6",
