@@ -39,7 +39,7 @@
     "test:dev:no-coverage": "vitest --no-coverage"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/eslint-plugin": "^8.34.1",
     "@typescript-eslint/parser": "^8.34.1",
     "@vheemstra/imagemin-avifenc": "^2.1.0",
     "@vheemstra/imagemin-oxipng": "^1.0.0",
